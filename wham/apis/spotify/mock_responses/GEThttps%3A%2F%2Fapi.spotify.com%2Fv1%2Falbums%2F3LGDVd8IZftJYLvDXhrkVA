@@ -1,0 +1,315 @@
+{
+  "album_type" : "album",
+  "artists" : [ {
+    "external_urls" : {
+      "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+    },
+    "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+    "id" : "0C0XlULifJtAgn6ZNCW2eu",
+    "name" : "The Killers",
+    "type" : "artist",
+    "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+  } ],
+  "available_markets" : [ ],
+  "external_ids" : {
+    "upc" : "00602517858664"
+  },
+  "external_urls" : {
+    "spotify" : "https://open.spotify.com/album/3LGDVd8IZftJYLvDXhrkVA"
+  },
+  "genres" : [ ],
+  "href" : "https://api.spotify.com/v1/albums/3LGDVd8IZftJYLvDXhrkVA",
+  "id" : "3LGDVd8IZftJYLvDXhrkVA",
+  "images" : [ {
+    "height" : 639,
+    "url" : "https://i.scdn.co/image/a212fda21978058feafa03aed5d50b68a3239dd8",
+    "width" : 640
+  }, {
+    "height" : 300,
+    "url" : "https://i.scdn.co/image/f32dc77c5949ebb37bb3f8f94750c951ed971ad2",
+    "width" : 300
+  }, {
+    "height" : 64,
+    "url" : "https://i.scdn.co/image/be1159520941dafd2d56cbedf4040295f264c80c",
+    "width" : 64
+  } ],
+  "name" : "Day & Age",
+  "popularity" : 10,
+  "release_date" : "2008",
+  "release_date_precision" : "year",
+  "tracks" : {
+    "href" : "https://api.spotify.com/v1/albums/3LGDVd8IZftJYLvDXhrkVA/tracks?offset=0&limit=50",
+    "items" : [ {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 253653,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/1Twzkz75J43Y9ieMBw3gyb"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/1Twzkz75J43Y9ieMBw3gyb",
+      "id" : "1Twzkz75J43Y9ieMBw3gyb",
+      "name" : "Losing Touch",
+      "preview_url" : "https://p.scdn.co/mp3-preview/e6886c1d4442bdece27ffeaf39f2ffb27726ab89",
+      "track_number" : 1,
+      "type" : "track",
+      "uri" : "spotify:track:1Twzkz75J43Y9ieMBw3gyb"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 245373,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/1OgzwQPCJby16nUMpGKupA"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/1OgzwQPCJby16nUMpGKupA",
+      "id" : "1OgzwQPCJby16nUMpGKupA",
+      "name" : "Human",
+      "preview_url" : "https://p.scdn.co/mp3-preview/82dd2a859c2759ae3de0e599e0c06491ccd631ab",
+      "track_number" : 2,
+      "type" : "track",
+      "uri" : "spotify:track:1OgzwQPCJby16nUMpGKupA"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 284546,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/0ux681nahyb3ZFwb4vK9CR"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/0ux681nahyb3ZFwb4vK9CR",
+      "id" : "0ux681nahyb3ZFwb4vK9CR",
+      "name" : "Spaceman",
+      "preview_url" : "https://p.scdn.co/mp3-preview/abfef359e1766959468fe8d2482a2b4fd67fbe66",
+      "track_number" : 3,
+      "type" : "track",
+      "uri" : "spotify:track:0ux681nahyb3ZFwb4vK9CR"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 213773,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/076Y058UdqBaal3YpEXJYo"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/076Y058UdqBaal3YpEXJYo",
+      "id" : "076Y058UdqBaal3YpEXJYo",
+      "name" : "Joy Ride",
+      "preview_url" : "https://p.scdn.co/mp3-preview/3d1caa86037774e8fcabe33cfdf495107f680368",
+      "track_number" : 4,
+      "type" : "track",
+      "uri" : "spotify:track:076Y058UdqBaal3YpEXJYo"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 225160,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/2FZBNwuOylpTNh4yodr3cM"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/2FZBNwuOylpTNh4yodr3cM",
+      "id" : "2FZBNwuOylpTNh4yodr3cM",
+      "name" : "A Dustland Fairytale",
+      "preview_url" : "https://p.scdn.co/mp3-preview/f353fe124e3448ce3b298cd5e8d22e6bc1a10d34",
+      "track_number" : 5,
+      "type" : "track",
+      "uri" : "spotify:track:2FZBNwuOylpTNh4yodr3cM"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 218893,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/0sF1Lxcu11MD3PpnnicB6A"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/0sF1Lxcu11MD3PpnnicB6A",
+      "id" : "0sF1Lxcu11MD3PpnnicB6A",
+      "name" : "This Is Your Life",
+      "preview_url" : "https://p.scdn.co/mp3-preview/2c48f63f877be6319584b41feeb4c2764662394e",
+      "track_number" : 6,
+      "type" : "track",
+      "uri" : "spotify:track:0sF1Lxcu11MD3PpnnicB6A"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 185360,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/3PQ2BowrpB2RPGbZ4RKVh4"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/3PQ2BowrpB2RPGbZ4RKVh4",
+      "id" : "3PQ2BowrpB2RPGbZ4RKVh4",
+      "name" : "I Can't Stay",
+      "preview_url" : "https://p.scdn.co/mp3-preview/cc357c505e3f061587a17a61a244cf01a1f508bc",
+      "track_number" : 7,
+      "type" : "track",
+      "uri" : "spotify:track:3PQ2BowrpB2RPGbZ4RKVh4"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 184133,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/6MLP7pfpoL91AsOHQZAlA9"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/6MLP7pfpoL91AsOHQZAlA9",
+      "id" : "6MLP7pfpoL91AsOHQZAlA9",
+      "name" : "Neon Tiger",
+      "preview_url" : "https://p.scdn.co/mp3-preview/5d8f9de4b9249e0fcf36b088c16c30502e3a9cd3",
+      "track_number" : 8,
+      "type" : "track",
+      "uri" : "spotify:track:6MLP7pfpoL91AsOHQZAlA9"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 278493,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/13odZOcKqZtuDx3JkuVesI"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/13odZOcKqZtuDx3JkuVesI",
+      "id" : "13odZOcKqZtuDx3JkuVesI",
+      "name" : "The World We Live In",
+      "preview_url" : "https://p.scdn.co/mp3-preview/f700df44b0cc14f9f2f6c31fc9fb35cf3298eb8e",
+      "track_number" : 9,
+      "type" : "track",
+      "uri" : "spotify:track:13odZOcKqZtuDx3JkuVesI"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 411373,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/4MmWmNwTXLe0edB5rkUvVx"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/4MmWmNwTXLe0edB5rkUvVx",
+      "id" : "4MmWmNwTXLe0edB5rkUvVx",
+      "name" : "Goodnight, Travel Well",
+      "preview_url" : "https://p.scdn.co/mp3-preview/9a3e561c6e489e0948a38f6c2b07e5202c10491e",
+      "track_number" : 10,
+      "type" : "track",
+      "uri" : "spotify:track:4MmWmNwTXLe0edB5rkUvVx"
+    }, {
+      "artists" : [ {
+        "external_urls" : {
+          "spotify" : "https://open.spotify.com/artist/0C0XlULifJtAgn6ZNCW2eu"
+        },
+        "href" : "https://api.spotify.com/v1/artists/0C0XlULifJtAgn6ZNCW2eu",
+        "id" : "0C0XlULifJtAgn6ZNCW2eu",
+        "name" : "The Killers",
+        "type" : "artist",
+        "uri" : "spotify:artist:0C0XlULifJtAgn6ZNCW2eu"
+      } ],
+      "disc_number" : 1,
+      "duration_ms" : 267146,
+      "explicit" : false,
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/track/2HyfIAVYbeZa6uXCVFngC1"
+      },
+      "href" : "https://api.spotify.com/v1/tracks/2HyfIAVYbeZa6uXCVFngC1",
+      "id" : "2HyfIAVYbeZa6uXCVFngC1",
+      "name" : "Human - Ferry Corsten Radio Remix",
+      "preview_url" : "https://p.scdn.co/mp3-preview/0b0f6c9c5343c829a4b4278d14f57477c7d732dc",
+      "track_number" : 11,
+      "type" : "track",
+      "uri" : "spotify:track:2HyfIAVYbeZa6uXCVFngC1"
+    } ],
+    "limit" : 50,
+    "next" : null,
+    "offset" : 0,
+    "previous" : null,
+    "total" : 11
+  },
+  "type" : "album",
+  "uri" : "spotify:album:3LGDVd8IZftJYLvDXhrkVA"
+}

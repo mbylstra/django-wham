@@ -1,0 +1,20 @@
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Detail Field</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for field in endpoint.get_fields %}
+            <tr>
+                <td>{% if field.primary_key %}⚷{% endif %}</td>
+                <td>{{field.name}}</td>
+                <td>{{field.type_repr}}</td>
+                <td>{% if field.wham_detailed %}✔{% endif %}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

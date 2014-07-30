@@ -1,0 +1,13 @@
+Django==1.6.5
+Jinja2==2.7.3
+MarkupSafe==0.23
+South==1.0
+argparse==1.2.1
+backports.ssl-match-hostname==3.4.0.2
+django-extensions==1.3.8
+ipython==2.1.0
+pyzmq==14.3.1
+requests==2.3.0
+six==1.7.3
+tornado==3.2.2
+wsgiref==0.1.2

@@ -1,0 +1,455 @@
+{
+  "artists" : {
+    "href" : "https://api.spotify.com/v1/search?query=Django&offset=0&limit=20&type=artist",
+    "items" : [ {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5Z1XZyEFY0dewG8faEIiEx"
+      },
+      "genres" : [ "Big Band", "Continental Jazz", "Dixieland", "Early Jazz", "Guitar Jazz", "Gypsy", "International", "Jazz", "Jazz Instrument", "Pop/Rock", "South/Eastern European Traditions", "Standards", "Traditional European Folk", "Traditional Pop", "Vocal" ],
+      "href" : "https://api.spotify.com/v1/artists/5Z1XZyEFY0dewG8faEIiEx",
+      "id" : "5Z1XZyEFY0dewG8faEIiEx",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/055c9806c873f107282904d249362bab763d5644",
+        "width" : 631
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/6fdf5662b5e7d78e3b879c5e54a2504284de6b40",
+        "width" : 296
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/396b7343f8b4c14e8be4854e675b20bb927d33ee",
+        "width" : 63
+      } ],
+      "name" : "Django Reinhardt",
+      "popularity" : 75,
+      "type" : "artist",
+      "uri" : "spotify:artist:5Z1XZyEFY0dewG8faEIiEx"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/2ARO60gI5do88ho6azmzab"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/2ARO60gI5do88ho6azmzab",
+      "id" : "2ARO60gI5do88ho6azmzab",
+      "images" : [ {
+        "height" : 667,
+        "url" : "https://i.scdn.co/image/7a10ff4a8c9831d134f5f5c32c5fb55328adb0f7",
+        "width" : 1000
+      }, {
+        "height" : 427,
+        "url" : "https://i.scdn.co/image/28c374c35ef2c0260a08bcaf93b67e91341bb5d4",
+        "width" : 640
+      }, {
+        "height" : 133,
+        "url" : "https://i.scdn.co/image/783e995da6e9e07aae8eaa7af850e30b82caad5e",
+        "width" : 200
+      }, {
+        "height" : 43,
+        "url" : "https://i.scdn.co/image/1774d47d25772a15f6813b07365a105532339964",
+        "width" : 64
+      } ],
+      "name" : "Django Django",
+      "popularity" : 42,
+      "type" : "artist",
+      "uri" : "spotify:artist:2ARO60gI5do88ho6azmzab"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/0vAPDDoJ3Hqk5sOff00c3j"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/0vAPDDoJ3Hqk5sOff00c3j",
+      "id" : "0vAPDDoJ3Hqk5sOff00c3j",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/775cda329487a78a6b2c58bf99eba8bd8344c04b",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/7d3072e7f9e425d27889fa8f2ecd46963e426b54",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/98ed3273341c7848f794f02d89ad2334b379379b",
+        "width" : 64
+      } ],
+      "name" : "Django",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:0vAPDDoJ3Hqk5sOff00c3j"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/22uunDQJ8DYIkuoaWw7XAD"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/22uunDQJ8DYIkuoaWw7XAD",
+      "id" : "22uunDQJ8DYIkuoaWw7XAD",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/910c9c209681a8384ec80b77f405252b25ff79a9",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/5cda31a6695d41ec93a0b20ed248288ed86f4d5a",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/8c9b55e8b0f2e01e8d2fc3285eca31fe40fa269e",
+        "width" : 64
+      } ],
+      "name" : "Django Reinhart",
+      "popularity" : 4,
+      "type" : "artist",
+      "uri" : "spotify:artist:22uunDQJ8DYIkuoaWw7XAD"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/3xhAbpdVeWv5w4BD4iu89x"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/3xhAbpdVeWv5w4BD4iu89x",
+      "id" : "3xhAbpdVeWv5w4BD4iu89x",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/e0cc3d9a6c0c16f3391e6b8a9195de505bdb1ad5",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/6cf2c305f2296fe7dd41d6628b0de3fd5cb00386",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/45f41dfbea12df82ca6139d99c2ad6b55dffb066",
+        "width" : 64
+      } ],
+      "name" : "Interview with Django Django",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:3xhAbpdVeWv5w4BD4iu89x"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/0Rlelhri29A0ly94SSDz4m"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/0Rlelhri29A0ly94SSDz4m",
+      "id" : "0Rlelhri29A0ly94SSDz4m",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/7db17d38a967650bd0ab98c577239429173fb9cb",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/5b7111169b70a5b9b570d3709beb33340705c0ef",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/e2aa657a5e03428ba85613a937964cf3c6c83824",
+        "width" : 64
+      } ],
+      "name" : "Django Reinhardt & Stéphane Grappelli",
+      "popularity" : 21,
+      "type" : "artist",
+      "uri" : "spotify:artist:0Rlelhri29A0ly94SSDz4m"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5nYHAb10GekvarmZDn28I0"
+      },
+      "genres" : [ "Alternative Pop/Rock", "Alternative/Indie Rock", "Pop/Rock", "Punk/New Wave", "Ska Revival", "Ska-Punk", "Skatepunk", "Third Wave Ska Revival" ],
+      "href" : "https://api.spotify.com/v1/artists/5nYHAb10GekvarmZDn28I0",
+      "id" : "5nYHAb10GekvarmZDn28I0",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/57a65328cc86bd692de514c7290fce289222bf8d",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/fbe48a562143a2164d6b56cf79a3d06f93f918b4",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/8609f724a2c973e701caf096d213ff9a69cf3a23",
+        "width" : 64
+      } ],
+      "name" : "King Django",
+      "popularity" : 10,
+      "type" : "artist",
+      "uri" : "spotify:artist:5nYHAb10GekvarmZDn28I0"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/530l1HsYHzQuOYFBDUOHHo"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/530l1HsYHzQuOYFBDUOHHo",
+      "id" : "530l1HsYHzQuOYFBDUOHHo",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/d7903c88f4454342ca3bf6a0b5d8324ba087c81e",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/c69b02879ccd973749149734a8e4f3bedfd9f37b",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/2e841a1a6a2ba0ac2d65723d05e927105a4d8815",
+        "width" : 64
+      } ],
+      "name" : "Pearl Django",
+      "popularity" : 8,
+      "type" : "artist",
+      "uri" : "spotify:artist:530l1HsYHzQuOYFBDUOHHo"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/0aPobuZcU7C6OgpGU0R5V8"
+      },
+      "genres" : [ "Free Jazz", "Jazz Instrument", "Modern Creative", "Piano Jazz" ],
+      "href" : "https://api.spotify.com/v1/artists/0aPobuZcU7C6OgpGU0R5V8",
+      "id" : "0aPobuZcU7C6OgpGU0R5V8",
+      "images" : [ {
+        "height" : 999,
+        "url" : "https://i.scdn.co/image/c677e2f794f78fb13d120845d40f4c65a7f7b109",
+        "width" : 1000
+      }, {
+        "height" : 639,
+        "url" : "https://i.scdn.co/image/d038126d2bc805dc64e176ecb162a368209589c7",
+        "width" : 640
+      }, {
+        "height" : 200,
+        "url" : "https://i.scdn.co/image/25cc8c75edfb59321323123a3da3c0174e7bfc27",
+        "width" : 200
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/da6b06deb5b4d101076cc683ff3a7364ed0bc177",
+        "width" : 64
+      } ],
+      "name" : "Django Bates",
+      "popularity" : 1,
+      "type" : "artist",
+      "uri" : "spotify:artist:0aPobuZcU7C6OgpGU0R5V8"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/53rFNMVj8qceBR1voLM9dl"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/53rFNMVj8qceBR1voLM9dl",
+      "id" : "53rFNMVj8qceBR1voLM9dl",
+      "images" : [ ],
+      "name" : "Prince Django",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:53rFNMVj8qceBR1voLM9dl"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/2onmCslqboJDdDoCo7ZPd2"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/2onmCslqboJDdDoCo7ZPd2",
+      "id" : "2onmCslqboJDdDoCo7ZPd2",
+      "images" : [ {
+        "height" : 665,
+        "url" : "https://i.scdn.co/image/d26ef285f6d75c60c66546b61f909699f9f12404",
+        "width" : 999
+      }, {
+        "height" : 426,
+        "url" : "https://i.scdn.co/image/e0b24c8e9fcfdb74f273c53366a20d88bbff065d",
+        "width" : 640
+      }, {
+        "height" : 133,
+        "url" : "https://i.scdn.co/image/657d988fdb15c5636e7e7e95cba13d8f82d2e1d1",
+        "width" : 200
+      }, {
+        "height" : 43,
+        "url" : "https://i.scdn.co/image/bb74b61c355ec7445fc0dafbe9c3d65bbd48b4fc",
+        "width" : 64
+      } ],
+      "name" : "Django Wagner",
+      "popularity" : 28,
+      "type" : "artist",
+      "uri" : "spotify:artist:2onmCslqboJDdDoCo7ZPd2"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/081sI7pQ9ToajMp8i3FcxC"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/081sI7pQ9ToajMp8i3FcxC",
+      "id" : "081sI7pQ9ToajMp8i3FcxC",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/519c702bc04c36a935df4f28f1146fb2a1e3e43b",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/2cc2c17e561de6375b3837f2b7d73006e1efa08c",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/f300ee4ae330c6cd40746dcbdc71cd539cf07b47",
+        "width" : 64
+      } ],
+      "name" : "Django Asül",
+      "popularity" : 2,
+      "type" : "artist",
+      "uri" : "spotify:artist:081sI7pQ9ToajMp8i3FcxC"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/7vmPVxp5ezmkecYoL1z9Pe"
+      },
+      "genres" : [ "Adult Alternative Pop/Rock", "Alt-Country", "Alternative Pop/Rock", "Alternative/Indie Rock", "Contemporary Country", "Pop/Rock" ],
+      "href" : "https://api.spotify.com/v1/artists/7vmPVxp5ezmkecYoL1z9Pe",
+      "id" : "7vmPVxp5ezmkecYoL1z9Pe",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/015475dc50c018bd8c144e3f0d7d1619308385c0",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/c777412c2c33cb6d342eb24e8801c903e1e4bd7f",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/5e4c1143654d3b6a7aaef45de94c9cc25915105f",
+        "width" : 64
+      } ],
+      "name" : "Django Walker",
+      "popularity" : 1,
+      "type" : "artist",
+      "uri" : "spotify:artist:7vmPVxp5ezmkecYoL1z9Pe"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5uybeHhQHuhLg2rDgPvsrq"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/5uybeHhQHuhLg2rDgPvsrq",
+      "id" : "5uybeHhQHuhLg2rDgPvsrq",
+      "images" : [ ],
+      "name" : "Django Mezoro",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:5uybeHhQHuhLg2rDgPvsrq"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/3ylbZcOIfNQxLUexSmSMmR"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/3ylbZcOIfNQxLUexSmSMmR",
+      "id" : "3ylbZcOIfNQxLUexSmSMmR",
+      "images" : [ ],
+      "name" : "Django Menzoro",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:3ylbZcOIfNQxLUexSmSMmR"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5SQQDShmfkZmuKMRo0Auxe"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/5SQQDShmfkZmuKMRo0Auxe",
+      "id" : "5SQQDShmfkZmuKMRo0Auxe",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/9066341358eaa1299fd917dd6f1b30ef5bfb7d7a",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/56ad82ec4fdde29f4dd385a9f7c406d25f632a96",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/e6bc082186f39714e0a5fc6d4ec9006c4aa86da5",
+        "width" : 64
+      } ],
+      "name" : "Django Voris",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:5SQQDShmfkZmuKMRo0Auxe"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/3QQa8Lj27NH3DcZZSE5rLN"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/3QQa8Lj27NH3DcZZSE5rLN",
+      "id" : "3QQa8Lj27NH3DcZZSE5rLN",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/7feb93a486673ccb0881904fbeda9502fe8dc4e8",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/34ff7ae015c7fcae733385f8c92224e05f42da1f",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/7672c5253ef1c9eef2e8f1a0d80cf5fd7f184e98",
+        "width" : 64
+      } ],
+      "name" : "Django Ze",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:3QQa8Lj27NH3DcZZSE5rLN"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5YpfadSX38dzPETCbIOlpi"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/5YpfadSX38dzPETCbIOlpi",
+      "id" : "5YpfadSX38dzPETCbIOlpi",
+      "images" : [ {
+        "height" : 600,
+        "url" : "https://i.scdn.co/image/84044dca284fd2fac3f23ae3454a80a386380090",
+        "width" : 600
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/b04836bc7280707640e51898f01bb50284dfafe6",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/21f4779672585ebc5b6ebceeb66eae01e914c893",
+        "width" : 64
+      } ],
+      "name" : "Django Moro",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:5YpfadSX38dzPETCbIOlpi"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/46qemXGp7Lw4RFJ4mFibhq"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/46qemXGp7Lw4RFJ4mFibhq",
+      "id" : "46qemXGp7Lw4RFJ4mFibhq",
+      "images" : [ {
+        "height" : 640,
+        "url" : "https://i.scdn.co/image/02b1913decc490ba6e3465a324f18fc1bd4c1ce9",
+        "width" : 640
+      }, {
+        "height" : 300,
+        "url" : "https://i.scdn.co/image/39e2863bc1db81aa250761c01095588bcbcbf730",
+        "width" : 300
+      }, {
+        "height" : 64,
+        "url" : "https://i.scdn.co/image/34ba7599956c45336559a832adc090624a293dee",
+        "width" : 64
+      } ],
+      "name" : "Romeo Django",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:46qemXGp7Lw4RFJ4mFibhq"
+    }, {
+      "external_urls" : {
+        "spotify" : "https://open.spotify.com/artist/5034PalqiiGrUdCBYnhcTe"
+      },
+      "genres" : [ ],
+      "href" : "https://api.spotify.com/v1/artists/5034PalqiiGrUdCBYnhcTe",
+      "id" : "5034PalqiiGrUdCBYnhcTe",
+      "images" : [ ],
+      "name" : "Symphonic Django",
+      "popularity" : 0,
+      "type" : "artist",
+      "uri" : "spotify:artist:5034PalqiiGrUdCBYnhcTe"
+    } ],
+    "limit" : 20,
+    "next" : "https://api.spotify.com/v1/search?query=Django&offset=20&limit=20&type=artist",
+    "offset" : 0,
+    "previous" : null,
+    "total" : 227
+  }
+}
