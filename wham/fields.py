@@ -76,9 +76,34 @@ class WhamManyToManyField(models.ManyToManyField):
         self.wham_params = kwargs.pop('wham_params', {})
         return super(WhamManyToManyField, self).__init__(*args, **kwargs)
 
+
+
+
     @property
     def type_repr(self):
         return 'many to many'
+
+
+class WhamForeignKey(models.ForeignKey):
+
+    def __init__(self, *args, **kwargs):
+        self.wham_result_path = kwargs.pop('wham_result_path', None)
+        self.wham_endpoint = kwargs.pop('wham_endpoint', None)
+        self.wham_results_path = kwargs.pop('wham_results_path', ())
+        self.wham_pk_param = kwargs.pop('wham_pk_param', None)
+        self.wham_params = kwargs.pop('wham_params', {})
+        return super(WhamForeignKey, self).__init__(*args, **kwargs)
+
+    def get_result_path(self):
+        result_path = self.wham_result_path
+        if not result_path:
+            return (self.name,)
+        else:
+            return result_path
+
+    @property
+    def type_repr(self):
+        return 'foreign key'
 
 class WhamImageUrlField(WhamTextField):
     pass

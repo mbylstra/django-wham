@@ -16,7 +16,7 @@ from django.db import models
 import string
 
 from wham.apis.twitter.twitter_bearer_auth import BearerAuth as TwitterBearerAuth
-from wham.fields import WhamDateTimeField
+from wham.fields import WhamDateTimeField, WhamForeignKey
 
 FROM_LAST_ID = 'FROM_LAST_ID'
 
@@ -57,6 +57,7 @@ wham_meta_search_attributes = {
     'required': (),
     'defaults': {
         'endpoint': '',
+        'search_field': 'name',
         'results_path': (),
         'params': {},
         'search_param': 'q',
@@ -124,9 +125,6 @@ class WhamManager(models.Manager):
                                                  wham_meta_search_attributes['required'],
                                                  wham_meta_search_attributes['defaults'])
 
-                for key, value in deepcopy(wham_meta_attributes['defaults']).iteritems():
-                    if not hasattr(self, key):
-                        setattr(self, key, value)
 
     @property
     def is_many_related_manager(self):
@@ -140,9 +138,9 @@ class WhamManager(models.Manager):
         return getattr(settings, self.wham_meta.api_key_settings_name)
 
     def add_auth_params(self, params):
-        if self.auth_for_public_get == 'API_KEY':
+        if self._wham_meta.auth_for_public_get == 'API_KEY':
             params[self.api_key_param] = self.get_api_key()
-        if self.requires_oauth_token:
+        if self._wham_meta.requires_oauth_token:
             params['token'] = self.get_oauth_token()
 
 
@@ -162,7 +160,7 @@ class WhamManager(models.Manager):
 
         url = self._wham_meta.base_url + url_tail + self._wham_meta.url_postfix
 
-        final_params = self.params
+        final_params = self._wham_meta.params
         final_params.update(params if params else {})
         self.add_auth_params(final_params)
         if final_params:
@@ -209,14 +207,24 @@ class WhamManager(models.Manager):
             result_path = field.get_result_path()
             try:
                 value = dpath(data, result_path)
-                if isinstance(field, WhamDateTimeField):
-                    value = datetime.fromtimestamp(
-                        time.mktime(time.strptime(value, '%a %b %d %H:%M:%S +0000 %Y')))
-                    value = timezone.make_aware(value, timezone.get_default_timezone())
-
-                kwargs[field_name] = value
             except KeyError:
                 pass
+            else:
+                if isinstance(field, WhamForeignKey):
+                    fk_model_class = field.rel.to
+                    if value is not None:
+                        fk_instance = fk_model_class.objects.get_from_dict(value)
+                    else:
+                        fk_instance = None
+                    kwargs[field_name] = fk_instance
+
+                else:
+                    if isinstance(field, WhamDateTimeField):
+                        value = datetime.fromtimestamp(
+                            time.mktime(time.strptime(value, '%a %b %d %H:%M:%S +0000 %Y')))
+                        value = timezone.make_aware(value, timezone.get_default_timezone())
+
+                    kwargs[field_name] = value
 
         try:
             instance = self.model.objects.get(pk=kwargs[pk_dict_key], wham_use_cache=True)
@@ -229,6 +237,7 @@ class WhamManager(models.Manager):
         #now we do m2m fields
         for field, _ in self.model._meta.get_m2m_with_model():
             related_class = field.rel.to
+            wham_result_path = field.wham_result_path
             if not field.wham_result_path:
                 wham_result_path = (field.name,)
             try:
@@ -251,7 +260,6 @@ class WhamManager(models.Manager):
     def get_from_web(self, *args, **kwargs):
 
         fetch_live = kwargs.pop('fetch_live', False)
-        # print 'get_from_web fetch_live:', fetch_live
 
         pk_field_name = self.model._meta.pk.name
 
@@ -264,18 +272,18 @@ class WhamManager(models.Manager):
                 pk = kwargs[pk_field_name]
 
             params = {}
-            if self.url_pk_type == 'path':
+            if self._wham_meta.url_pk_type == 'path':
                 url_tail = self._wham_meta.endpoint + '/' + str(pk)
-            elif self.url_pk_type == 'querystring':
-                params[self.wham_meta.url_pk_param] = str(pk)
-                url_tail = self.wham_meta.endpoint
+            elif self._wham_meta.url_pk_type == 'querystring':
+                params[self._wham_meta.url_pk_param] = str(pk)
+                url_tail = self._wham_meta.endpoint
             response_data, cached, full_url, depth = self.make_get_request(url_tail, params=params, fetch_live=fetch_live)
             if cached:
                 raise AlreadyCachedException()
             else:
                 settings._wham_http_cache[(full_url, depth)] = None
 
-            item_data = dpath(response_data, self.detail_base_result_path)
+            item_data = dpath(response_data, self._wham_meta.detail_base_result_path)
             return self.get_from_dict(item_data, pk_dict_key=pk_field_name)
             # else:
             #     raise e  #TODO: make it obvious in the error message that the API returned a 404
@@ -313,8 +321,7 @@ class WhamManager(models.Manager):
 
         self.init_wham_meta()
 
-
-        #this is a really dodgy hack
+        # this is a really dodgy hack
         # it's here because getting a twitter user by screen_name is case insensitive in twitter,
         # but a regular django get() is case sensitive. The hack is converting all
         # kwarg=value to kwarg__iexact=value
@@ -344,7 +351,7 @@ class WhamManager(models.Manager):
 
         search_meta = self._wham_search_meta
         if search_meta:
-            search_field = 'name'
+            search_field = search_meta.search_field #what??
             search_query = '%s__icontains' % search_field
             if search_query in kwargs:
                 value = kwargs[search_query]
@@ -449,7 +456,6 @@ class WhamManager(models.Manager):
                 source_class = self.source_field.rel.to
                 m2m_field_name = self.prefetch_cache_name #this is a total hack. it *happens* to be the same as the m2m fieldname.
                 m2m_field = getattr(source_class, m2m_field_name).field
-                # print m2m_field
                 endpoint = Template(m2m_field.wham_endpoint).render(Context({'id': self.instance.pk}))
                 params = m2m_field.wham_params
                 if m2m_field.wham_pk_param:

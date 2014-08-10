@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     # 'wham.apis.instagram',
     # 'wham.apis.musicbrainz',
     'wham.apis.facebook',
+    'wham.apis.eventbrite',
 )
 
 MIDDLEWARE_CLASSES = (
