@@ -8,10 +8,28 @@ class DeezerMeta:
     base_url = 'http://api.deezer.com/'
     # pk_property = 'id'
 
+
+class DeezerArtist(WhamModel):
+    id = WhamCharField(max_length=255, primary_key=True)
+    name = WhamTextField()
+
+    class Meta:
+        db_table = 'deezer_artist'
+
+    class WhamMeta(DeezerMeta):
+        endpoint = 'artist'
+
+        class Search:
+            endpoint = 'search/artist'
+            results_path = ('data',)
+
+    def __unicode__(self):
+        return self.name
+
 class DeezerTrack(WhamModel):
 
     id = WhamCharField(max_length=255, primary_key=True)
-    title = WhamTextField() #TODO: this shouldn't be required if json property is same as django fieldname
+    title = WhamTextField()
 
     rank = WhamIntegerField(null=True)
     bpm = WhamFloatField(null=True)

@@ -9,7 +9,6 @@ from wham.models import WhamModel
 class SpotifyMeta:
     base_url = 'https://api.spotify.com/v1/'
 
-
 class SpotifyTrack(WhamModel):
 
     id = WhamCharField(max_length=255, primary_key=True)
@@ -23,6 +22,9 @@ class SpotifyTrack(WhamModel):
     preview_url = WhamTextField(null=True)
     artists = WhamManyToManyField('SpotifyArtist', related_name='tracks')
 
+    class Meta:
+        db_table = 'spotify_track'
+
     class WhamMeta(SpotifyMeta):
         endpoint = 'tracks'
 
@@ -31,8 +33,6 @@ class SpotifyTrack(WhamModel):
             params = {'type': 'track'}
             results_path = ('tracks', 'items')
 
-    class Meta:
-        db_table = 'spotify_track'
 
     def __unicode__(self):
         return self.name

@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     # 'wham.apis.musicbrainz',
     'wham.apis.facebook',
     'wham.apis.eventbrite',
+    'wham.match_models.spotify_deezer',
 )
 
 MIDDLEWARE_CLASSES = (

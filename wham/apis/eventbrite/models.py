@@ -39,7 +39,7 @@ class EventbriteEvent(WhamModel):
     resource_uri = WhamTextField()
     url = WhamTextField()
     capacity = WhamIntegerField()
-    venue = WhamForeignKey(EventbriteVenue, null=True) #this should be a foreign key! But we only support m2m so far.
+    venue = WhamForeignKey(EventbriteVenue, null=True)
 
 
     class WhamMeta(EventbriteMeta):
