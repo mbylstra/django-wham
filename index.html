@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=640">
+
+    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+
+    <script type="text/javascript" src="javascripts/modernizr.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $('#main_content').headsmart()
+      })
+    </script>
+    <title>Django-wham by mbylstra</title>
+  </head>
+
+  <body>
+    <a id="forkme_banner" href="https://github.com/mbylstra/django-wham">View on GitHub</a>
+    <div class="shell">
+
+      <header>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <h1>Django-wham</h1>
+            <h2>REST APIs disguised as Django ORM Models</h2>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+      </header>
+
+      <section id="downloads">
+        <span class="inner">
+          <a href="https://github.com/mbylstra/django-wham/zipball/master" class="zip"><em>download</em> .ZIP</a><a href="https://github.com/mbylstra/django-wham/tarball/master" class="tgz"><em>download</em> .TGZ</a>
+        </span>
+      </section>
+
+
+      <span class="banner-fix"></span>
+
+
+      <section id="main_content">
+        <h1>
+<a name="django-wham" class="anchor" href="#django-wham"><span class="octicon octicon-link"></span></a>django-wham</h1>
+
+<p><strong>REST APIs disguised as Django ORM Models</strong></p>
+
+<p>With django-wham you can query REST APIs in exactly the same way you query Django Models:</p>
+
+<pre><code>&gt;&gt;&gt; artist = SpotifyArtist.objects.get(id='5Z1XZyEFY0dewG8faEIiEx')
+fetching https://api.spotify.com/v1/artists/5Z1XZyEFY0dewG8faEIiEx
+&gt;&gt;&gt; print artist.name
+Django Reinhardt
+</code></pre>
+
+<pre><code>&gt;&gt;&gt; twitter_user = TwitterUser.objects.get(screen_name='djangoproject')
+fetching https://api.twitter.com/1.1/users/show.json?screen_name=djangoproject
+&gt;&gt;&gt; for tweet in twitter_user.tweets.all():
+&gt;&gt;&gt;     print tweet.text
+fetching https://api.twitter.com/1.1/statuses/user_timeline.json?user_id=191225303
+Django 1.7 release candidate 2 - It's almost here! Today we're pleased to announce the second release-candidate pa...
+Django 1.7 release candidate 1 - It's almost here! Tonight we're pleased to announce the first release-candidate p...
+...
+</code></pre>
+
+<h3>
+<a name="creating-django-wham-models" class="anchor" href="#creating-django-wham-models"><span class="octicon octicon-link"></span></a>Creating Django Wham Models</h3>
+
+<p>In order to query a REST API (eg: Twitter, Flickr, Youtube, etc), you need a Wham Model. A Wham Model corresponds to an API Endpoint and has a special inner WhamMeta class that describes how the REST API should map to the Django Model.</p>
+
+<p>This simple Wham Model that enables you too look up a Spotify Artist by its Spotify ID and retrieve some information about that artist.
+In this case the names of the fields match the property names of the retrieved JSON data, so very little configuration is required.</p>
+
+<pre><code>from wham.models import WhamModel
+
+class SpotifyArtist(WhamModel):
+
+    id = CharField(max_length=100, primary_key=True) 
+        # the primary key field should be of the same name and type as the API Endpoint ID
+        # rather than the default auto-incrementing key Django provides. For example,
+        # '5Z1XZyEFY0dewG8faEIiEx' is the Spotify ID for Django Reinhardt.
+    name = TextField()
+    href = TextField()
+    popularity = IntegerField()
+    uri = UriField()
+
+    class WhamMeta(SpotifyMeta):
+        base_url = 'https://api.spotify.com/v1/'
+        endpoint = 'artists'
+</code></pre>
+
+<p>Now we add another Spotify Endpoint, this time both of the Models' WhamMeta class inherit from a single class,
+to share commonalities between endpoints such as the base url</p>
+
+<pre><code>class SpotifyWhamMeta:
+    base_url = 'https://api.spotify.com/v1/'
+
+class SpotifyArtist(WhamModel):
+    ...
+
+    class WhamMeta(SpotifyWhamMeta):
+        endpoint = 'artists'
+
+class SpotifyAlbum(WhamModel):
+
+    id = WhamCharField(max_length=255, primary_key=True)
+    name = WhamTextField()
+    release_date = WhamTextField(null=True)
+    popularity = WhamIntegerField(null=True, wham_detailed=True)
+
+    class WhamMeta(SpotifyWhamMeta):
+        endpoint = 'albums'
+
+</code></pre>
+
+<h3>
+<a name="many-to-many-endpoints" class="anchor" href="#many-to-many-endpoints"><span class="octicon octicon-link"></span></a>Many To Many Endpoints</h3>
+
+<p>Django Wham supports many to many endpoints such as <code>https://api.spotify.com/v1/artists/{id}/albums</code>.
+This is possible by specifying a WhamManyToMany field and doing a little configuration.</p>
+
+<p>To create a many to many field between Artists and Albums:</p>
+
+<pre><code>class SpotifyArtist(WhamModel):
+    ...
+
+    albums = WhamManyToManyField(
+        'SpotifyAlbum',
+        wham_endpoint='artists/{{id}}/albums', #django template syntax is used to substitue the value of thd id
+        wham_results_path=['items'] 
+            # This is the 'path' where to find the list of results in the retreived JSON data.
+            # The list or tuple represents a path in the JSON tree. A hypothetical example might be ['photos', 'results']
+    )
+
+    ...
+
+</code></pre>
+
+<h3>
+<a name="wham-model-repository" class="anchor" href="#wham-model-repository"><span class="octicon octicon-link"></span></a>Wham Model Repository</h3>
+
+<p>Have a look at <a href="https://github.com/mbylstra/django-wham/tree/master/wham/apis">https://github.com/mbylstra/django-wham/tree/master/wham/apis</a> for some more examples of Wham Models. We're hoping this will become an ever growing repository of Wham Models for the multitude of public REST APIs on the web, so you won't have to write your own. If you have ever wanted to contribute to open source, but have been too daunted, creating a Wham Model is a fun and easy way to get started. Only basic Django experience is required.</p>
+
+<h3>
+<a name="installation-and-use-of-wham-models" class="anchor" href="#installation-and-use-of-wham-models"><span class="octicon octicon-link"></span></a>Installation and use of Wham Models</h3>
+
+<p>Until Django Wham has been hosted on PyPI so you can use <code>pip</code> (coming soon!), you can give Django Wham a spin by downloading the source code and copying the wham directory (it's a Django App) into your Django project.</p>
+
+<pre><code>a_django_project
+├── project
+├── wham #copy the wham directory into your django project
+└── settings.py
+
+
+</code></pre>
+
+<p>add some entries to your INSTALLED_APPS in your settings.py file</p>
+
+<pre><code>INSTALLED_APPS = (
+    ...
+    'wham', #required
+    'wham.apis.spotify', #an optional provided API
+    'wham.apis.twitter', #optional
+    'your_custom_wham_app' #this should be a Django app with one or more Wham Models in its models.py file
+    ...
+)
+
+</code></pre>
+
+<p>Django wham models can be used just like regular Django Models</p>
+
+<pre><code>from wham.apis.spotify import SpotifyArtist
+SpotifyArtist.objects.filter(name__icontains="green")
+</code></pre>
+
+<h3>
+<a name="demo" class="anchor" href="#demo"><span class="octicon octicon-link"></span></a>demo</h3>
+
+<p>This git repository also comes with a demo django project and some Ipython notebook examples that can be run with <code>django manage.py shell_plus --notebook</code>. Your environment must have the packages in ipython-requirements.txt installed for this to work. </p>
+
+<h3>
+<a name="more-info" class="anchor" href="#more-info"><span class="octicon octicon-link"></span></a>More Info</h3>
+
+<ul>
+<li><a href="http://slides.com/mbylstra/django-wham">here are some slides about django-wham</a></li>
+</ul>
+      </section>
+
+      <footer>
+        <span class="ribbon-outer">
+          <span class="ribbon-inner">
+            <p>this project by <a href="https://github.com/mbylstra">mbylstra</a> can be found on <a href="https://github.com/mbylstra/django-wham">GitHub</a></p>
+          </span>
+          <span class="left-tail"></span>
+          <span class="right-tail"></span>
+        </span>
+        <p>Generated with <a href="http://pages.github.com">GitHub Pages</a> using Merlot</p>
+        <span class="octocat"></span>
+      </footer>
+
+    </div>
+
+    
+  </body>
+</html>
