@@ -9,8 +9,5 @@ setup(
   url = 'https://github.com/mbylstra/django-wham',
   download_url = 'https://github.com/mbylstra/django-wham/tarball/0.1',
   keywords = ['django', 'rest', 'orm'],
-  install_requires=[
-      'requests',
-  ],
   classifiers = [],
 )
