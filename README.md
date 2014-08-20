@@ -105,14 +105,10 @@ Have a look at https://github.com/mbylstra/django-wham/tree/master/wham/apis for
 
 ### Installation and use of Wham Models
 
-Until Django Wham has been hosted on PyPI so you can use `pip` (coming soon!), you can give Django Wham a spin by downloading the source code and copying the wham directory (it's a Django App) into your Django project.
 
+django-wham can be installed via PyPI:
 ```
-a_django_project
-├── project
-├── wham #copy the wham directory into your django project
-└── settings.py
-
+    pip install django-wham
 
 ```
 
