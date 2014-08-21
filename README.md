@@ -112,7 +112,7 @@ django-wham can be installed via PyPI:
 
 ```
 
-add some entries to your INSTALLED_APPS in your settings.py file
+Add some entries to your INSTALLED_APPS in your settings.py file. See https://github.com/mbylstra/django-wham/tree/master/wham/apis for a list of example apis.
 ```
 INSTALLED_APPS = (
     ...
@@ -122,6 +122,11 @@ INSTALLED_APPS = (
     'your_custom_wham_app' #this should be a Django app with one or more Wham Models in its models.py file
     ...
 )
+
+```
+You must then run syncdb before you can start using any wham models
+```
+python manage.py syncdb
 
 ```
 Django wham models can be used just like regular Django Models
