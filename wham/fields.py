@@ -1,16 +1,19 @@
 from django.db import models
-from south.modelsinspector import add_introspection_rules
 
-add_introspection_rules([], [
-    "^wham\.models\.WhamCharField",
-    "^wham\.models\.WhamTextField",
-    "^wham\.models\.WhamIntegerField",
-    "^wham\.models\.WhamFloatField",
-    "^wham\.models\.WhamManyToManyField",
-    "^wham\.models\.WhamDateField",
-    "^wham\.models\.WhamDateTimeField",
-    "^wham\.models\.WhamImageUrlField",
-])
+# the following will be required if we want to support south
+# ----------------------------------------------------------------
+# from south.modelsinspector import add_introspection_rules
+#
+# add_introspection_rules([], [
+#     "^wham\.models\.WhamCharField",
+#     "^wham\.models\.WhamTextField",
+#     "^wham\.models\.WhamIntegerField",
+#     "^wham\.models\.WhamFloatField",
+#     "^wham\.models\.WhamManyToManyField",
+#     "^wham\.models\.WhamDateField",
+#     "^wham\.models\.WhamDateTimeField",
+#     "^wham\.models\.WhamImageUrlField",
+# ])
 
 
 
