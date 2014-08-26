@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 setup(
     name='django-wham',
     packages=find_packages(exclude=['wham_project']),
-    version='0.1.1',
+    version='0.1.2',
     description='Rest APIs disguised as Django ORM Models',
     author='Michael Bylstra',
     author_email='mbylstra@gmail.com',
