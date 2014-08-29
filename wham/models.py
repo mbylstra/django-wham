@@ -19,6 +19,7 @@ from wham.apis.twitter.twitter_bearer_auth import BearerAuth as TwitterBearerAut
 from wham.fields import WhamDateTimeField, WhamForeignKey
 
 FROM_LAST_ID = 'FROM_LAST_ID'
+NEXT_PAGE_URL = 'NEXT_PAGE_URL'
 
 def dpath(d, path):
     node = d
@@ -45,11 +46,13 @@ wham_meta_attributes = {
         'url_pk_type': 'path',  #the primary key is assumed to be at the end of the path (not in the querysting) by default
         'url_pk_param': None,
         'api_key_param': 'api_key',
+        'token_param': 'token',
         'api_params': {},
         'params': {},
         'detail_base_result_path': (),
         'pager_type': None,
         'pager_param': None,
+        'oauth_token': None,
     }
 }
 
@@ -88,8 +91,6 @@ class WhamManager(models.Manager):
 
     use_for_related_fields = True
 
-    http_cache = None
-
         # if we are a ManyRelatedManaer
         # if self.is_many_related_manager:
         #     self.init_wham_meta(model)
@@ -105,9 +106,6 @@ class WhamManager(models.Manager):
         model = self.model
 
         if not getattr(self, '_wham_meta', None):
-            http_cache = getattr(settings, '_wham_http_cache', None)
-            if not http_cache:
-                settings._wham_http_cache = {}
 
             if hasattr(model, 'WhamMeta'):
 
@@ -141,14 +139,16 @@ class WhamManager(models.Manager):
         if self._wham_meta.auth_for_public_get == 'API_KEY':
             params[self.api_key_param] = self.get_api_key()
         if self._wham_meta.requires_oauth_token:
-            params['token'] = self.get_oauth_token()
+            params[self._wham_meta.token_param] = self.get_oauth_token()
 
+    def get_request_url(self, url_tail, params=None):
+        url = self._wham_meta.base_url + url_tail + self._wham_meta.url_postfix
+        final_params = self._wham_meta.params
+        final_params.update(params if params else {})
+        self.add_auth_params(final_params)
+        return url, final_params
 
-
-
-
-    def make_get_request(self, url_tail, params=None, fetch_live=False, depth=1):
-
+    def make_get_request_with_full_url_path(self, url_path, params=None, depth=1):
         session = requests.Session()
         if self._wham_meta.auth_for_public_get == 'TWITTER':
             twitter_auth = getattr(settings, 'twitter_auth', None)
@@ -158,30 +158,23 @@ class WhamManager(models.Manager):
 
             session.auth = twitter_auth
 
-        url = self._wham_meta.base_url + url_tail + self._wham_meta.url_postfix
-
-        final_params = self._wham_meta.params
-        final_params.update(params if params else {})
-        self.add_auth_params(final_params)
-        if final_params:
-            full_url = "%s?%s" % (url, urlencode(final_params))
-        else:
-            full_url = url
-        print full_url
-
-        if not fetch_live:
-            if (full_url, depth) in settings._wham_http_cache:
-                return settings._wham_http_cache[(full_url, depth)], True, full_url, depth
-        else:
-            pass
-        response = session.get(url, params=final_params)
+        print 'url_path', url_path
+        print 'params', params
+        response = session.get(url_path, params=params)
         response.raise_for_status()
         response_data = response.json()
 
-        #this should have the request time or use the standard Django cache
-        # this is a very basic cache that only caches results as long as the process is running, just
-        # for demo purposes.
-        return response_data, False, full_url, depth
+        if params:
+            full_url = "%s?%s" % (url_path, urlencode(params))
+        else:
+            full_url = url_path
+        print full_url
+
+        return response_data, full_url, depth
+
+    def make_get_request(self, url_tail, params=None, depth=1):
+        url, final_params = self.get_request_url(url_tail, params)
+        return self.make_get_request_with_full_url_path(url, final_params)
 
     def get_fields(self):
         return [field for (field, _) in self.model._meta.get_fields_with_model()]
@@ -249,7 +242,6 @@ class WhamManager(models.Manager):
 
         return instance
 
-
     def get_wham_lookup_fields(self):
         fields = []
         for field in self.get_fields():
@@ -258,8 +250,6 @@ class WhamManager(models.Manager):
         return fields
 
     def get_from_web(self, *args, **kwargs):
-
-        fetch_live = kwargs.pop('fetch_live', False)
 
         pk_field_name = self.model._meta.pk.name
 
@@ -277,11 +267,7 @@ class WhamManager(models.Manager):
             elif self._wham_meta.url_pk_type == 'querystring':
                 params[self._wham_meta.url_pk_param] = str(pk)
                 url_tail = self._wham_meta.endpoint
-            response_data, cached, full_url, depth = self.make_get_request(url_tail, params=params, fetch_live=fetch_live)
-            if cached:
-                raise AlreadyCachedException()
-            else:
-                settings._wham_http_cache[(full_url, depth)] = None
+            response_data, full_url, depth = self.make_get_request(url_tail, params=params)
 
             item_data = dpath(response_data, self._wham_meta.detail_base_result_path)
             return self.get_from_dict(item_data, pk_dict_key=pk_field_name)
@@ -305,12 +291,8 @@ class WhamManager(models.Manager):
                 field_name = list(field_names_to_lookup)[0]
                 url_param = lookupable_fields_dict[field_name]
                 params = {url_param: kwargs[kwarg_field_names[field_name]]}
-                response_data, cached, full_url, depth = \
-                    self.make_get_request(self._wham_meta.endpoint, params=params, fetch_live=fetch_live)
-                if cached:
-                    raise AlreadyCachedException()
-                else:
-                    settings._wham_http_cache[(full_url, depth)] = None
+                response_data, full_url, depth = \
+                    self.make_get_request(self._wham_meta.endpoint, params=params)
 
                 return self.get_from_dict(response_data)
             else:
@@ -328,22 +310,15 @@ class WhamManager(models.Manager):
 
 
         for key, value in kwargs.iteritems():
-            if key not in ['pk', 'id', 'wham_fetch_live', 'wham_use_cache', 'wham_depth']:
+            if key not in ['pk', 'id', 'wham_use_cache', 'wham_depth']:
                 kwargs[key + '__iexact'] = kwargs.pop(key)
 
-        fetch_live = kwargs.pop('wham_fetch_live', False)
         use_cache = kwargs.pop('wham_use_cache', False)
         if use_cache:
             return super(WhamManager, self).get(*args, **kwargs)
         else:
             # TODO: we need to check that we can actually lookup the field in the api, if not do a regular django get()
-            try:
-                kwargs['fetch_live'] = fetch_live
-                return self.get_from_web(*args, **kwargs) #always get from web for now
-            except AlreadyCachedException:
-                # then get cached result
-                kwargs.pop('fetch_live')
-                return super(WhamManager, self).get(*args, **kwargs)
+            return self.get_from_web(*args, **kwargs)
 
 
     def filter(self, *args, **kwargs):
@@ -361,57 +336,27 @@ class WhamManager(models.Manager):
                 search_param = search_meta.search_param
                 params[search_param] = value
 
-                response_data, cached, full_url, depth = \
-                    self.make_get_request(url_tail, params=params)
-                if cached:
-                    return super(WhamManager, self).filter(*args, **kwargs)
-                else:
-                    settings._wham_http_cache[(full_url, depth)] = None
-                    items = dpath(response_data, search_meta.results_path)
-                    for item in items:
-                        self.get_from_dict(item)
+                response_data, full_url, depth = self.make_get_request(
+                        url_tail, params=params)
+                items = dpath(response_data, search_meta.results_path)
+                for item in items:
+                    self.get_from_dict(item)
 
-                    return super(WhamManager, self).filter(*args, **kwargs)
+                return super(WhamManager, self).filter(*args, **kwargs)
 
         return super(WhamManager, self).filter(*args, **kwargs)
 
     def all(self, *args, **kwargs):
 
-        self.init_wham_meta()
 
-        fetch_live = kwargs.pop('wham_fetch_live', False)
-        use_cache = kwargs.pop('wham_use_cache', False)
-        depth = kwargs.pop('wham_depth', 1)
+        # helper functions for the all() method
+        ####################################
 
-        pages_to_get = kwargs.pop('wham_pages', 1)
-        if pages_to_get == 'all':
-            pages_to_get = 10000000
-        pages_left = pages_to_get
-        curr_page = 1
-        last_id = None
-        second_last_id = None
-
-        def process_page(last_id, curr_page, pages_left):
-            if pages_to_get > 1:
-                if self._wham_meta.pager_type is not None:
-                    if self._wham_meta.pager_type == FROM_LAST_ID:
-                        if last_id is not None:
-                            params[self._wham_meta.pager_param] = last_id
-                    else:
-                        raise Exception('paging is not implemented yet')
-                else:
-                    raise Exception('paging is not supported by this endpoint')
-
-
-            response_data, cached, full_url, _ = self.make_get_request(
-                endpoint, params, fetch_live=fetch_live, depth=depth)
-            if cached:
-                return response_data['last_id'] #in this case all we need to know from the cached data is the last_id... yeah I know...it's really confusing!
-
+        def process_page_response_data(response_data):
             pk_field_name = self.model._meta.pk.name
             items = dpath(response_data, m2m_field.wham_results_path)
 
-
+            last_id = None
             for item in items:
                 item_id = item['id']  #we can't just assume the key is 'id'! but we will anyway #FIXME
                 last_id = item_id
@@ -447,9 +392,47 @@ class WhamManager(models.Manager):
                     #TODO we should really update the 'through' table fields if it exists
 
             #now that we know the last_id, we can finally store the cache data
-            settings._wham_http_cache[(full_url, depth)] = {'last_id': last_id}
             return last_id
 
+        def get_next_page_url(page_response_data, last_id):
+            if self._wham_meta.pager_type is not None:
+                if self._wham_meta.pager_type == FROM_LAST_ID:
+                    if last_id is not None:
+                        params[self._wham_meta.pager_param] = last_id
+                    next_page_url, final_params = self.get_request_url(endpoint, params)
+                elif self._wham_meta.pager_type == NEXT_PAGE_URL:
+                    final_params = None
+                    try:
+                        next_page_url = dpath(page_response_data, self._wham_meta.next_page_path)
+                    except KeyError:
+                        next_page_url = None
+                else:
+                    raise Exception('paging is not implemented yet')
+
+                return next_page_url, final_params
+            else:
+                raise Exception('paging is not supported by this endpoint')
+
+
+        # the main code for the all() method
+        ####################################
+
+        self.init_wham_meta()
+
+        oauth_token  = kwargs.pop('token', None)
+        if oauth_token:
+            self.set_oauth_token(oauth_token)
+
+        use_cache = kwargs.pop('wham_use_cache', False)
+        depth = kwargs.pop('wham_depth', 1)
+
+        pages_to_get = kwargs.pop('wham_pages', 1)
+        if pages_to_get == 'all':
+            pages_to_get = 10000000
+        pages_left = pages_to_get
+        curr_page = 1
+        last_id = None
+        second_last_id = None
         if not use_cache:
             if self.is_many_related_manager:
                 #get the source field
@@ -461,13 +444,26 @@ class WhamManager(models.Manager):
                 if m2m_field.wham_pk_param:
                     params[m2m_field.wham_pk_param] = self.instance.pk
 
+                page_response_data, full_url, __ = self.make_get_request(
+                    endpoint, params, depth=depth)
+                last_id = process_page_response_data(page_response_data)
+
                 while (pages_left >= 1):
+                    url_path, params = get_next_page_url(page_response_data, last_id)
+                    if url_path is None:
+                        break
+                    page_response_data, full_url, __ = self.make_get_request_with_full_url_path(url_path, params)
                     second_last_id = last_id
-                    last_id = process_page(last_id, curr_page, pages_left)
+                    last_id = process_page_response_data(page_response_data)
                     if second_last_id == last_id:
                         break
                     curr_page += 1
                     pages_left -= 1
+            else:
+                # we don't bother handling this case yet. It's pretty rare that
+                # a public API will provide a list of all objects for a endpoint (there's
+                # usually thousands of them)
+                pass
 
         return super(WhamManager, self).all(*args, **kwargs)
 
@@ -486,10 +482,11 @@ class WhamManager(models.Manager):
         return render_to_string('wham/docs/endpoint.html', {'endpoint': self})
 
     def set_oauth_token(self, token):
-        self.model.wham_oauth_token = token #store the token in the model class. why not.
+        self.init_wham_meta()
+        self._wham_meta.oauth_token = token
 
     def get_oauth_token(self):
-        return self.model.wham_oauth_token
+        return self._wham_meta.oauth_token
 
 
 class WhamModel(models.Model):

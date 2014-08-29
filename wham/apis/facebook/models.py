@@ -7,6 +7,7 @@ from wham.models import WhamModel
 class FacebookMeta:
     base_url = 'https://graph.facebook.com/'
     requires_oauth_token = True
+    token_param = 'access_token'
 
 class FacebookUser(WhamModel):
 

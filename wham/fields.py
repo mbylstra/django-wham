@@ -69,6 +69,12 @@ class WhamDateTimeField(WhamFieldMixin, models.DateTimeField):
         self.wham_format = kwargs.pop('wham_format', None)
         return super(WhamDateTimeField, self).__init__(*args, **kwargs)
 
+class WhamEmailField(WhamFieldMixin, models.EmailField):
+
+    @property
+    def type_repr(self):
+        return 'email'
+
 class WhamManyToManyField(models.ManyToManyField):
 
     def __init__(self, *args, **kwargs):
