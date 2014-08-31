@@ -75,6 +75,12 @@ class WhamEmailField(WhamFieldMixin, models.EmailField):
     def type_repr(self):
         return 'email'
 
+class WhamURLField(WhamFieldMixin, models.URLField):
+
+    @property
+    def type_repr(self):
+        return 'url'
+
 class WhamManyToManyField(models.ManyToManyField):
 
     def __init__(self, *args, **kwargs):

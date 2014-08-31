@@ -22,7 +22,7 @@ class InstagramTag(WhamModel):
         #  https://api.instagram.com/v1/tags/djangocon/media/recent
         'InstagramPost',
         related_name='tags',
-        wham_endpoint='tags/{{id}}/media/recent',
+        wham_endpoint='tags/{{pk}}/media/recent',
         wham_results_path=('data',)
     )
 

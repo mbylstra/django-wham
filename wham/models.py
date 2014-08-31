@@ -33,13 +33,11 @@ class WhamImproperlyConfigured(Exception):
 class AlreadyCachedException(Exception):
     pass
 
-wham_meta_required = [
-    'endpoint'
-]
-
 wham_meta_attributes = {
-    'required': ('endpoint',),
+    # 'required': ('endpoint',),
+    'required': (),
     'defaults': {
+        'endpoint': '',
         'url_postfix': '',
         'auth_for_public_get': None,
         'requires_oauth_token': False,
@@ -102,8 +100,10 @@ class WhamManager(models.Manager):
         # need model to get access to its Meta class.
 
 
-    def init_wham_meta(self):
+    def init_wham_meta(self, **kwargs):
         model = self.model
+
+
 
         if not getattr(self, '_wham_meta', None):
 
@@ -123,6 +123,10 @@ class WhamManager(models.Manager):
                                                  wham_meta_search_attributes['required'],
                                                  wham_meta_search_attributes['defaults'])
 
+        if not self.get_oauth_token():
+            oauth_token = kwargs.pop('oauth_token', None)
+            if oauth_token:
+                self.set_oauth_token(oauth_token)
 
     @property
     def is_many_related_manager(self):
@@ -223,7 +227,7 @@ class WhamManager(models.Manager):
             instance = self.model.objects.get(pk=kwargs[pk_dict_key], wham_use_cache=True)
             for attr, value in kwargs.iteritems():
                 setattr(instance, attr, value)
-                instance.save()
+            instance.save()
         except ObjectDoesNotExist:
             instance = self.model.objects.create(**kwargs)
 
@@ -269,7 +273,11 @@ class WhamManager(models.Manager):
                 url_tail = self._wham_meta.endpoint
             response_data, full_url, depth = self.make_get_request(url_tail, params=params)
 
-            item_data = dpath(response_data, self._wham_meta.detail_base_result_path)
+            item_path_template = self._wham_meta.detail_base_result_path
+            item_path = []
+            for node_template in item_path_template:
+                item_path.append(Template(node_template).render(Context({'pk': pk})))
+            item_data = dpath(response_data, item_path)
             return self.get_from_dict(item_data, pk_dict_key=pk_field_name)
             # else:
             #     raise e  #TODO: make it obvious in the error message that the API returned a 404
@@ -301,7 +309,7 @@ class WhamManager(models.Manager):
 
     def get(self, *args, **kwargs):
 
-        self.init_wham_meta()
+        self.init_wham_meta(**kwargs)
 
         # this is a really dodgy hack
         # it's here because getting a twitter user by screen_name is case insensitive in twitter,
@@ -322,7 +330,7 @@ class WhamManager(models.Manager):
 
 
     def filter(self, *args, **kwargs):
-        self.init_wham_meta()
+        self.init_wham_meta(**kwargs)
 
         search_meta = self._wham_search_meta
         if search_meta:
@@ -339,15 +347,16 @@ class WhamManager(models.Manager):
                 response_data, full_url, depth = self.make_get_request(
                         url_tail, params=params)
                 items = dpath(response_data, search_meta.results_path)
+
+                pk_field_name = self.model._meta.pk.name
                 for item in items:
-                    self.get_from_dict(item)
+                    self.get_from_dict(item, pk_dict_key=pk_field_name)
 
                 return super(WhamManager, self).filter(*args, **kwargs)
 
         return super(WhamManager, self).filter(*args, **kwargs)
 
     def all(self, *args, **kwargs):
-
 
         # helper functions for the all() method
         ####################################
@@ -417,11 +426,7 @@ class WhamManager(models.Manager):
         # the main code for the all() method
         ####################################
 
-        self.init_wham_meta()
-
-        oauth_token  = kwargs.pop('token', None)
-        if oauth_token:
-            self.set_oauth_token(oauth_token)
+        self.init_wham_meta(**kwargs)
 
         use_cache = kwargs.pop('wham_use_cache', False)
         depth = kwargs.pop('wham_depth', 1)
@@ -439,7 +444,7 @@ class WhamManager(models.Manager):
                 source_class = self.source_field.rel.to
                 m2m_field_name = self.prefetch_cache_name #this is a total hack. it *happens* to be the same as the m2m fieldname.
                 m2m_field = getattr(source_class, m2m_field_name).field
-                endpoint = Template(m2m_field.wham_endpoint).render(Context({'id': self.instance.pk}))
+                endpoint = Template(m2m_field.wham_endpoint).render(Context({'pk': self.instance.pk}))
                 params = m2m_field.wham_params
                 if m2m_field.wham_pk_param:
                     params[m2m_field.wham_pk_param] = self.instance.pk
@@ -465,6 +470,7 @@ class WhamManager(models.Manager):
                 # usually thousands of them)
                 pass
 
+        kwargs.pop('oauth_token', None)
         return super(WhamManager, self).all(*args, **kwargs)
 
 
@@ -482,7 +488,6 @@ class WhamManager(models.Manager):
         return render_to_string('wham/docs/endpoint.html', {'endpoint': self})
 
     def set_oauth_token(self, token):
-        self.init_wham_meta()
         self._wham_meta.oauth_token = token
 
     def get_oauth_token(self):

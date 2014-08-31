@@ -50,7 +50,7 @@ class SpotifyArtist(WhamModel):
     albums = WhamManyToManyField(
         'SpotifyAlbum',
         related_name='artists',
-        wham_endpoint='artists/{{id}}/albums',
+        wham_endpoint='artists/{{pk}}/albums',
         wham_results_path=('items',)
     )
 
