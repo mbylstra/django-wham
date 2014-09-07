@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 from django.utils import timezone
 
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 import string
@@ -177,6 +178,8 @@ class WhamManager(models.Manager):
         return response_data, full_url, depth
 
     def make_get_request(self, url_tail, params=None, depth=1):
+        if url_tail is None:
+            url_tail = ''
         url, final_params = self.get_request_url(url_tail, params)
         return self.make_get_request_with_full_url_path(url, final_params)
 
@@ -210,7 +213,10 @@ class WhamManager(models.Manager):
                 if isinstance(field, WhamForeignKey):
                     fk_model_class = field.rel.to
                     if value is not None:
-                        fk_instance = fk_model_class.objects.get_from_dict(value)
+                        if self.instance:
+                            fk_instance = self.instance
+                        else:
+                            fk_instance = fk_model_class.objects.get_from_dict(value)
                     else:
                         fk_instance = None
                     kwargs[field_name] = fk_instance
@@ -361,6 +367,27 @@ class WhamManager(models.Manager):
         # helper functions for the all() method
         ####################################
 
+        def process_fk_page_response_data(response_data, fk_field):
+            pk_field_name = self.model._meta.pk.name
+            items = dpath(response_data, fk_field.wham_results_path)
+
+            last_id = None
+            for item in items:
+                item_id = item[pk_field_name]  #we can't just assume the key is 'id'! but we will anyway #FIXME
+                last_id = item_id
+
+                if depth == 1:
+                    item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
+                elif depth == 2:
+                    item_instance = self.get(pk=item_id) #get the full object detail (requires a web request)
+
+                else:
+                    pass
+                    #TODO we should really update the 'through' table fields if it exists
+
+            #now that we know the last_id, we can finally store the cache data
+            return last_id
+
         def process_page_response_data(response_data):
             pk_field_name = self.model._meta.pk.name
             items = dpath(response_data, m2m_field.wham_results_path)
@@ -439,7 +466,39 @@ class WhamManager(models.Manager):
         last_id = None
         second_last_id = None
         if not use_cache:
-            if self.is_many_related_manager:
+            if type(self).__name__ == 'RelatedManager': #for foreign keys
+                foreign_instance = self.instance
+                fk_field = None
+                for field in self.get_fields():
+                    if (isinstance(field, ForeignKey) \
+                            and type(self.model) == type(field.rel.to)
+                        ):
+                        print 'found'
+                        fk_field = field
+                        break
+                print 'asdfad'
+                templated_params = {}
+                for key, value in fk_field.wham_params.iteritems():
+                    templated_params[key] = Template(value).render(Context({'pk': self.instance.pk}))
+                print 'asdf'
+
+                page_response_data, full_url, __ = self.make_get_request(
+                    fk_field.wham_endpoint, templated_params, depth=depth)
+                process_fk_page_response_data(page_response_data, fk_field)
+                pass
+
+                # fk_field.wham_endpoint
+                # fk_field.wham_params
+                # fk_field.wham_pk_param
+                # fk_field.wham_result_path
+
+
+
+            elif self.is_many_related_manager:
+
+                # we must handle the case where this is a ForeignKey... not a M2M... didn't we already
+                # do that somewhere?? somewhere new? or did we always hack it for twitter? Spotify maybe?
+
                 #get the source field
                 source_class = self.source_field.rel.to
                 m2m_field_name = self.prefetch_cache_name #this is a total hack. it *happens* to be the same as the m2m fieldname.
