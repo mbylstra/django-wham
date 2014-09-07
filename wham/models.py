@@ -230,7 +230,7 @@ class WhamManager(models.Manager):
                     kwargs[field_name] = value
 
         try:
-            instance = self.model.objects.get(pk=kwargs[pk_dict_key], wham_use_cache=True)
+            instance = self.model.objects.get(pk=kwargs[pk_dict_key])
             for attr, value in kwargs.iteritems():
                 setattr(instance, attr, value)
             instance.save()
@@ -313,29 +313,41 @@ class WhamManager(models.Manager):
                 raise Exception('can only lookup one field at a time at this point')
 
 
+
+    def wham_get(self, *args, **kwargs):
+        kwargs['wham'] = True
+        return self.get(*args, **kwargs)
+
     def get(self, *args, **kwargs):
-
-        self.init_wham_meta(**kwargs)
-
-        # this is a really dodgy hack
-        # it's here because getting a twitter user by screen_name is case insensitive in twitter,
-        # but a regular django get() is case sensitive. The hack is converting all
-        # kwarg=value to kwarg__iexact=value
-
-
-        for key, value in kwargs.iteritems():
-            if key not in ['pk', 'id', 'wham_use_cache', 'wham_depth']:
-                kwargs[key + '__iexact'] = kwargs.pop(key)
-
-        use_cache = kwargs.pop('wham_use_cache', False)
-        if use_cache:
+        wham = kwargs.pop('wham', False)
+        if not wham:
+            # do a regular django get()
             return super(WhamManager, self).get(*args, **kwargs)
         else:
-            # TODO: we need to check that we can actually lookup the field in the api, if not do a regular django get()
+            self.init_wham_meta(**kwargs)
+
+            # this is a really dodgy hack
+            # it's here because getting a twitter user by screen_name is case insensitive in twitter,
+            # but a regular django get() is case sensitive. The hack is converting all
+            # kwarg=value to kwarg__iexact=value
+
+
+            for key, value in kwargs.iteritems():
+                if key not in ['pk', 'id', 'wham_use_cache', 'wham_depth']:
+                    kwargs[key + '__iexact'] = kwargs.pop(key)
             return self.get_from_web(*args, **kwargs)
 
+    def wham_filter(self, *args, **kwargs):
+        kwargs['wham'] = True
+        return self.filter(*args, **kwargs)
 
     def filter(self, *args, **kwargs):
+
+        wham = kwargs.pop('wham', False)
+        if not wham:
+            #do a regular filter()
+            return super(WhamManager, self).filter(*args, **kwargs)
+
         self.init_wham_meta(**kwargs)
 
         search_meta = self._wham_search_meta
@@ -358,11 +370,20 @@ class WhamManager(models.Manager):
                 for item in items:
                     self.get_from_dict(item, pk_dict_key=pk_field_name)
 
-                return super(WhamManager, self).filter(*args, **kwargs)
-
+        # do a regular filter()
         return super(WhamManager, self).filter(*args, **kwargs)
 
+
+    def wham_all(self, *args, **kwargs):
+        kwargs['wham'] = True
+        return self.all(*args, **kwargs)
+
     def all(self, *args, **kwargs):
+        wham = kwargs.pop('wham', False)
+        if not wham:
+            #do a regular django all()
+            kwargs.pop('oauth_token', None)
+            return super(WhamManager, self).all(*args, **kwargs)
 
         # helper functions for the all() method
         ####################################
@@ -379,7 +400,7 @@ class WhamManager(models.Manager):
                 if depth == 1:
                     item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
                 elif depth == 2:
-                    item_instance = self.get(pk=item_id) #get the full object detail (requires a web request)
+                    item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
 
                 else:
                     pass
@@ -400,7 +421,7 @@ class WhamManager(models.Manager):
                 if depth == 1:
                     item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
                 elif depth == 2:
-                    item_instance = self.get(pk=item_id) #get the full object detail (requires a web request)
+                    item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
 
                 if not self.filter(pk=item_instance.pk).exists():
                     if hasattr(self, 'add'):
@@ -512,7 +533,7 @@ class WhamManager(models.Manager):
                     endpoint, params, depth=depth)
                 last_id = process_page_response_data(page_response_data)
 
-                while (pages_left >= 1):
+                while pages_left >= 1:
                     url_path, params = get_next_page_url(page_response_data, last_id)
                     if url_path is None:
                         break
@@ -529,7 +550,9 @@ class WhamManager(models.Manager):
                 # usually thousands of them)
                 pass
 
+        #finish by doing a regular django all()
         kwargs.pop('oauth_token', None)
+        kwargs.pop('wham', False)
         return super(WhamManager, self).all(*args, **kwargs)
 
 
