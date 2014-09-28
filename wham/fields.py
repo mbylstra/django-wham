@@ -36,7 +36,7 @@ class WhamFieldMixin(object):
         return self.wham_url_param if self.wham_url_param else self.name
 
 
-class WhamCharField(WhamFieldMixin, models.TextField):
+class WhamCharField(WhamFieldMixin, models.CharField):
 
     @property
     def type_repr(self):
