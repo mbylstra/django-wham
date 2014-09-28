@@ -81,6 +81,12 @@ class WhamURLField(WhamFieldMixin, models.URLField):
     def type_repr(self):
         return 'url'
 
+class WhamImageField(WhamFieldMixin, models.ImageField):
+
+    @property
+    def type_repr(self):
+        return 'image'
+
 class WhamManyToManyField(models.ManyToManyField):
 
     def __init__(self, *args, **kwargs):
@@ -107,6 +113,7 @@ class WhamForeignKey(models.ForeignKey):
         self.wham_results_path = kwargs.pop('wham_results_path', ())
         self.wham_pk_param = kwargs.pop('wham_pk_param', None)
         self.wham_params = kwargs.pop('wham_params', {})
+        self.wham_no = kwargs.pop('wham_no', False)
         return super(WhamForeignKey, self).__init__(*args, **kwargs)
 
     def get_result_path(self):

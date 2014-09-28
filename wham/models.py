@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
-from urllib import urlencode
+from urllib import urlencode, quote_plus
 
 from django.conf import settings
 from django.db.models import ForeignKey
@@ -8,7 +8,7 @@ from django.template import Template, Context
 from django.template.loader import render_to_string
 import requests
 import time
-from datetime import datetime
+from datetime import datetime, date
 from django.utils import timezone
 
 
@@ -16,8 +16,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 import string
 
-from wham.apis.twitter.twitter_bearer_auth import BearerAuth as TwitterBearerAuth
-from wham.fields import WhamDateTimeField, WhamForeignKey
+from .apis.twitter.twitter_bearer_auth import BearerAuth as TwitterBearerAuth
+from .fields import WhamDateTimeField, WhamForeignKey
 
 FROM_LAST_ID = 'FROM_LAST_ID'
 NEXT_PAGE_URL = 'NEXT_PAGE_URL'
@@ -27,6 +27,14 @@ def dpath(d, path):
     for property_name in path:
         node = node[property_name]
     return node
+
+
+def urlencode_utf8(params):
+    if hasattr(params, 'items'):
+        params = params.items()
+    return '&'.join(
+        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(v.encode('utf8'), safe='/')
+            for k, v in params))
 
 class WhamImproperlyConfigured(Exception):
     pass
@@ -52,6 +60,8 @@ wham_meta_attributes = {
         'pager_type': None,
         'pager_param': None,
         'oauth_token': None,
+        'max_requests_per_day': None,
+        'max_requests_per_minute': None,
     }
 }
 
@@ -86,6 +96,177 @@ def check_n_set_class_attributes(klass, required, defaults, exclude=()):
         if not hasattr(klass, key):
             setattr(klass, key, value)
 
+def remove_tzinfo(t):
+    return t.replace(tzinfo=None)
+
+def time_floor_to_minute(t):
+    return t.replace(second=0, microsecond=0)
+
+def get_this_minute():
+    return time_floor_to_minute(timezone.now())
+
+class RateLimitingDataManager(models.Manager):
+
+    def get_for_app(self, app_label):
+        return self.get(pk=app_label)
+
+    def request_made(self, wham_model_class):
+        app_label = wham_model_class._meta.app_label
+        return self.get_for_app(app_label).request_made()
+
+    def check_request_limit(self, wham_model_class):
+        app_data = self.initialise(wham_model_class)
+        return app_data.check_request_limit()
+
+    def is_request_permitted(self, app_label):
+        return self.get_for_app(app_label).is_request_permitted()
+
+    # def
+
+    def initialise(self, wham_model_class):
+        """
+        @param wham_model_class:  this can be any class for the API, you only need to provide one
+        @return:
+        """
+        app_label = wham_model_class._meta.app_label
+        data = {
+            'max_requests_per_day': getattr(wham_model_class.WhamMeta, 'max_requests_per_day', None),
+            'max_requests_per_minute': getattr(wham_model_class.WhamMeta, 'max_requests_per_minute', None),
+            'minute_start': get_this_minute(),
+        }
+        try:
+            row = self.get(pk=app_label)
+
+        except ObjectDoesNotExist:
+            row = self.create(
+                pk=app_label,
+                **data
+            )
+        return row
+
+
+    def reset(self, wham_model_class):
+        app_label = wham_model_class._meta.app_label
+        data = {
+            'max_requests_per_day': getattr(wham_model_class.WhamMeta, 'max_requests_per_day', None),
+            'max_requests_per_minute': getattr(wham_model_class.WhamMeta, 'max_requests_per_minute', None),
+            'minute_start': get_this_minute(),
+            'requests_this_day': 0,
+            'requests_this_minute': 0,
+        }
+        try:
+            row = self.get(pk=app_label)
+            for key, val in data.iteritems():
+                setattr(row, key, data[key])
+            row.save()
+
+        except ObjectDoesNotExist:
+            row = self.create(
+                pk=app_label,
+                **data
+            )
+        return row
+
+class ReachedRequestLimit(Exception):
+    pass
+
+class ReachedDailyRequestLimit(ReachedRequestLimit):
+    pass
+
+class ReachedMaxRequestsPerMinuteLimit(ReachedRequestLimit):
+    pass
+
+class RateLimitingData(models.Model):
+    objects = RateLimitingDataManager()
+
+    app_label = models.CharField(max_length=100, primary_key=True)
+    max_requests_per_day = models.IntegerField(null=True)
+    max_requests_per_minute = models.IntegerField(null=True)
+    day_start = models.DateField(auto_now_add=True)
+    minute_start = models.DateTimeField()
+    requests_this_day = models.IntegerField(default=0)
+    requests_this_minute = models.IntegerField(default=0)
+    max_total_requests_in_day = models.IntegerField(default=0)
+    max_total_requests_in_minute = models.IntegerField(default=0)
+
+    def check_request_limit(self):
+        if not self.in_daily_limit():
+            raise ReachedDailyRequestLimit(
+                '%s requests made this day. %s daily limit'
+                % (self.requests_this_day, self.max_requests_per_day)
+            )
+        if not self.in_minute_limit():
+            raise ReachedMaxRequestsPerMinuteLimit(
+                '%s requests made this minute. %s requests per minute permitted'
+                % (self.requests_this_minute, self.max_requests_per_minute)
+            )
+
+    def request_made(self):
+        print 'request made'
+        if self.has_day_ticked_over():
+            self.max_total_requests_in_day = max(
+                self.requests_this_day, self.max_total_requests_in_day)
+            self.requests_this_day = 1
+            self.day_start = timezone.now()
+        elif self.has_minute_ticked_over():
+            self.max_total_requests_in_minute = max(
+                self.requests_this_minute, self.max_total_requests_in_minute)
+            self.requests_this_minute = 1
+            self.requests_this_day += 1
+            self.requests_this_minute = 1
+            self.minute_start = get_this_minute()
+        else:
+            self.requests_this_day += 1
+            self.requests_this_minute += 1
+        self.save()
+
+    def in_daily_limit(self):
+        if self.max_requests_per_day:
+            if not (self.has_day_ticked_over()
+                or self.requests_this_day < self.max_requests_per_day
+                ):
+                return False
+        return True
+
+    def in_minute_limit(self):
+        if self.max_requests_per_minute:
+            if not (self.has_minute_ticked_over()
+                or self.requests_this_minute < self.max_requests_per_minute
+                ):
+                return False
+        return True
+
+    def has_day_ticked_over(self):
+        if date.today() > self.day_start:
+            self.max_total_requests_in_day = max(
+                self.requests_this_day, self.max_total_requests_in_day)
+            self.requests_this_day = 1
+            self.day_start = timezone.now()
+            self.save()
+            return True
+        else:
+            return False
+
+    def has_minute_ticked_over(self):
+        this_minute = get_this_minute()
+        minute_start = self.minute_start
+        if this_minute > minute_start:
+            self.max_total_requests_in_minute = max(
+                self.requests_this_minute, self.max_total_requests_in_minute)
+            self.requests_this_minute = 1
+            self.minute_start = get_this_minute()
+            self.save()
+            return True
+        else:
+            return False
+
+    def print_stats(self):
+        print 'max_requests_per_day:', self.max_requests_per_day
+        print 'max_requests_per_minute:', self.max_requests_per_minute
+        print 'requests_this_day:', self.requests_this_day
+        print 'requests_this_minute:', self.requests_this_minute
+        print 'max_total_requests_in_day:', self.max_total_requests_in_day
+        print 'max_total_requests_in_minute:', self.max_total_requests_in_minute
 class WhamManager(models.Manager):
 
     use_for_related_fields = True
@@ -138,11 +319,11 @@ class WhamManager(models.Manager):
         return True
 
     def get_api_key(self):
-        return getattr(settings, self.wham_meta.api_key_settings_name)
+        return getattr(settings, self._wham_meta.api_key_settings_name)
 
     def add_auth_params(self, params):
         if self._wham_meta.auth_for_public_get == 'API_KEY':
-            params[self.api_key_param] = self.get_api_key()
+            params[self._wham_meta.api_key_param] = self.get_api_key()
         if self._wham_meta.requires_oauth_token:
             params[self._wham_meta.token_param] = self.get_oauth_token()
 
@@ -154,6 +335,7 @@ class WhamManager(models.Manager):
         return url, final_params
 
     def make_get_request_with_full_url_path(self, url_path, params=None, depth=1):
+        self.check_request_limit()
         session = requests.Session()
         if self._wham_meta.auth_for_public_get == 'TWITTER':
             twitter_auth = getattr(settings, 'twitter_auth', None)
@@ -163,18 +345,21 @@ class WhamManager(models.Manager):
 
             session.auth = twitter_auth
 
-        print 'url_path', url_path
-        print 'params', params
+        # print 'url_path', url_path
+        # print 'params', params
         response = session.get(url_path, params=params)
+
+
         response.raise_for_status()
         response_data = response.json()
 
         if params:
-            full_url = "%s?%s" % (url_path, urlencode(params))
+            full_url = "%s?%s" % (url_path, urlencode_utf8(params))
         else:
             full_url = url_path
         print full_url
 
+        self.request_made()
         return response_data, full_url, depth
 
     def make_get_request(self, url_tail, params=None, depth=1):
@@ -182,6 +367,12 @@ class WhamManager(models.Manager):
             url_tail = ''
         url, final_params = self.get_request_url(url_tail, params)
         return self.make_get_request_with_full_url_path(url, final_params)
+
+    def check_request_limit(self):
+        RateLimitingData.objects.check_request_limit(self.model)
+
+    def request_made(self):
+        RateLimitingData.objects.request_made(self.model)
 
     def get_fields(self):
         return [field for (field, _) in self.model._meta.get_fields_with_model()]
@@ -211,12 +402,17 @@ class WhamManager(models.Manager):
                 pass
             else:
                 if isinstance(field, WhamForeignKey):
+                    # this assumes that the foreign key is where we're coming
+                    # from. Sometimes we need to follow FK's to other places.
                     fk_model_class = field.rel.to
                     if value is not None:
-                        if self.instance:
+                        if self.instance and type(self.instance) is field.rel.to:
                             fk_instance = self.instance
                         else:
-                            fk_instance = fk_model_class.objects.get_from_dict(value)
+                            if type(value) is dict:
+                                fk_instance = fk_model_class.objects.get_from_dict(value)
+                            else:
+                                fk_instance = field.rel.to.objects.wham_get(pk=value)
                     else:
                         fk_instance = None
                     kwargs[field_name] = fk_instance
@@ -337,6 +533,12 @@ class WhamManager(models.Manager):
                     kwargs[key + '__iexact'] = kwargs.pop(key)
             return self.get_from_web(*args, **kwargs)
 
+
+    def wham_raw_api_filter(self, *args, **kwargs):
+        kwargs['raw_api'] = True
+        kwargs['wham'] = True
+        return self.filter(self, *args, **kwargs)
+
     def wham_filter(self, *args, **kwargs):
         kwargs['wham'] = True
         return self.filter(*args, **kwargs)
@@ -344,6 +546,7 @@ class WhamManager(models.Manager):
     def filter(self, *args, **kwargs):
 
         wham = kwargs.pop('wham', False)
+        raw_api = kwargs.pop('raw_api', False)
         if not wham:
             #do a regular filter()
             return super(WhamManager, self).filter(*args, **kwargs)
@@ -365,6 +568,9 @@ class WhamManager(models.Manager):
                 response_data, full_url, depth = self.make_get_request(
                         url_tail, params=params)
                 items = dpath(response_data, search_meta.results_path)
+
+                if raw_api:
+                    return response_data
 
                 pk_field_name = self.model._meta.pk.name
                 for item in items:
@@ -494,14 +700,11 @@ class WhamManager(models.Manager):
                     if (isinstance(field, ForeignKey) \
                             and type(self.model) == type(field.rel.to)
                         ):
-                        print 'found'
                         fk_field = field
                         break
-                print 'asdfad'
                 templated_params = {}
                 for key, value in fk_field.wham_params.iteritems():
                     templated_params[key] = Template(value).render(Context({'pk': self.instance.pk}))
-                print 'asdf'
 
                 page_response_data, full_url, __ = self.make_get_request(
                     fk_field.wham_endpoint, templated_params, depth=depth)
@@ -582,3 +785,5 @@ class WhamModel(models.Model):
 
     class Meta():
         abstract = True
+
+

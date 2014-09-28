@@ -5,7 +5,7 @@ from django.db import models
 # http://api.soundcloud.com/tracks/13158665.json?client_id=a43d27e75fbd64533f57428dd7be3ba5
 
 from django.db import models
-from wham.fields import WhamTextField, WhamIntegerField
+from wham.fields import WhamTextField, WhamIntegerField, WhamCharField
 from wham.models import WhamModel
 
 
@@ -17,7 +17,7 @@ class SoundcloudMeta:
 
 class SoundcloudTrack(WhamModel):
 
-    id = models.CharField(max_length=255, primary_key=True)
+    id = WhamCharField(max_length=255, primary_key=True)
     title = WhamTextField()
 
     track_type = WhamTextField(null=True)
