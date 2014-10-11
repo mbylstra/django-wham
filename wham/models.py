@@ -202,7 +202,7 @@ class RateLimitingData(models.Model):
             )
 
     def request_made(self):
-        print 'request made'
+        #print 'request made'
         if self.has_day_ticked_over():
             self.max_total_requests_in_day = max(
                 self.requests_this_day, self.max_total_requests_in_day)
@@ -412,7 +412,10 @@ class WhamManager(models.Manager):
                             if type(value) is dict:
                                 fk_instance = fk_model_class.objects.get_from_dict(value)
                             else:
-                                fk_instance = field.rel.to.objects.wham_get(pk=value)
+                                print 'doing a wham get... why?'
+                                print 'we need some way of disabling this easily..with depth?'
+                                fk_instance = None
+                                #fk_instance = field.rel.to.objects.wham_get(pk=value)
                     else:
                         fk_instance = None
                     kwargs[field_name] = fk_instance
@@ -604,8 +607,10 @@ class WhamManager(models.Manager):
                 last_id = item_id
 
                 if depth == 1:
+                    print 'getting from dict'
                     item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
                 elif depth == 2:
+                    print 'getting full object detail'
                     item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
 
                 else:
@@ -694,6 +699,8 @@ class WhamManager(models.Manager):
         second_last_id = None
         if not use_cache:
             if type(self).__name__ == 'RelatedManager': #for foreign keys
+
+                print 'is fk'
                 foreign_instance = self.instance
                 fk_field = None
                 for field in self.get_fields():
