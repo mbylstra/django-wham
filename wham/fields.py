@@ -23,6 +23,7 @@ class WhamFieldMixin(object):
         self.wham_can_lookup = kwargs.pop('wham_can_lookup', False)
         self.wham_url_param = kwargs.pop('wham_url_param', None)
         self.wham_detailed = kwargs.pop('wham_detailed', False)
+        self.wham_no = kwargs.pop('wham_no', False)
         return super(WhamFieldMixin, self).__init__(*args, **kwargs)
 
     def get_result_path(self):
