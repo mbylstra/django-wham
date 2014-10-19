@@ -61,6 +61,12 @@ class WhamFloatField(WhamFieldMixin, models.FloatField):
     def type_repr(self):
         return 'float'
 
+class WhamBooleanField(WhamFieldMixin, models.BooleanField):
+
+    @property
+    def type_repr(self):
+        return 'boolean'
+
 class WhamDateField(WhamFieldMixin, models.DateField):
     pass
 
