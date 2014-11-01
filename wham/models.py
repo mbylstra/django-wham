@@ -33,7 +33,7 @@ def urlencode_utf8(params):
     if hasattr(params, 'items'):
         params = params.items()
     return '&'.join(
-        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(v.encode('utf8'), safe='/')
+        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(unicode(v).encode('utf8'), safe='/')
             for k, v in params))
 
 class WhamImproperlyConfigured(Exception):
@@ -62,6 +62,7 @@ wham_meta_attributes = {
         'oauth_token': None,
         'max_requests_per_day': None,
         'max_requests_per_minute': None,
+        'not_found_error_path': None,
     }
 }
 
@@ -351,8 +352,10 @@ class WhamManager(models.Manager):
 
 
         response.raise_for_status()
+        print 'response', response.content
         response_data = response.json()
 
+        print 'params:', params
         if params:
             full_url = "%s?%s" % (url_path, urlencode_utf8(params))
         else:
@@ -434,6 +437,7 @@ class WhamManager(models.Manager):
                 setattr(instance, attr, value)
             instance.save()
         except ObjectDoesNotExist:
+            print 'kwargs: ', kwargs
             instance = self.model.objects.create(**kwargs)
 
         #now we do m2m fields
@@ -472,9 +476,9 @@ class WhamManager(models.Manager):
 
             params = {}
             if self._wham_meta.url_pk_type == 'path':
-                url_tail = self._wham_meta.endpoint + '/' + str(pk)
+                url_tail = self._wham_meta.endpoint + '/' + unicode(pk)
             elif self._wham_meta.url_pk_type == 'querystring':
-                params[self._wham_meta.url_pk_param] = str(pk)
+                params[self._wham_meta.url_pk_param] = unicode(pk)
                 url_tail = self._wham_meta.endpoint
             response_data, full_url, depth = self.make_get_request(url_tail, params=params)
 
@@ -482,10 +486,20 @@ class WhamManager(models.Manager):
             item_path = []
             for node_template in item_path_template:
                 item_path.append(Template(node_template).render(Context({'pk': pk})))
-            item_data = dpath(response_data, item_path)
-            return self.get_from_dict(item_data, pk_dict_key=pk_field_name)
-            # else:
-            #     raise e  #TODO: make it obvious in the error message that the API returned a 404
+
+            has_result = True
+            if self._wham_meta.not_found_error_path:
+                try:
+                    dpath(response_data, self._wham_meta.not_found_error_path)
+                    has_result = False
+                except KeyError:
+                    has_result = True
+
+            if has_result:
+                item_data = dpath(response_data, item_path)
+                return self.get_from_dict(item_data, pk_dict_key=pk_field_name)
+            else:
+                raise ObjectDoesNotExist
 
         else:
             lookupable_fields = self.get_wham_lookup_fields()
