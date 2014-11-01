@@ -142,3 +142,6 @@ This git repository also comes with a demo django project and some Ipython noteb
 
 ### More Info
 - [here are some slides about django-wham](http://slides.com/mbylstra/django-wham)
+
+### Disclaimer
+_Django Wham is currently in an Alpha/Proof-of-Concept stage. While I am using it to great success in my project http://kaleidoscope.fm, there are probably many edge cases that it does not handle very well. I would not recommend using this in production just yet. If you are interested in using this, please contact me and I won't hestitate to help out. Any kind of feedback would also be highly appreciated (bug reports, suggestions for improvements, requests for more APIs to be supported) - please submit a Git issue!_
