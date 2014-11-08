@@ -306,10 +306,9 @@ class WhamManager(models.Manager):
                                                  wham_meta_search_attributes['required'],
                                                  wham_meta_search_attributes['defaults'])
 
-        if not self.get_oauth_token():
-            oauth_token = kwargs.pop('oauth_token', None)
-            if oauth_token:
-                self.set_oauth_token(oauth_token)
+        oauth_token = kwargs.pop('oauth_token', None)
+        if oauth_token is not None:
+            self.set_oauth_token(oauth_token)
 
     @property
     def is_many_related_manager(self):
