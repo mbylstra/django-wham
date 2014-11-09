@@ -542,7 +542,7 @@ class WhamManager(models.Manager):
 
 
             for key, value in kwargs.iteritems():
-                if key not in ['pk', 'id', 'wham_use_cache', 'wham_depth']:
+                if key not in ['pk', 'id', 'wham_use_cache', 'wham_depth', 'oauth_token']:
                     kwargs[key + '__iexact'] = kwargs.pop(key)
             return self.get_from_web(*args, **kwargs)
 
