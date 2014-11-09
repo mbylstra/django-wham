@@ -457,6 +457,7 @@ class WhamManager(models.Manager):
         return fields
 
     def get_from_web(self, *args, **kwargs):
+        oauth_token = kwargs.get('oauth_token', None)
 
         pk_field_name = self.model._meta.pk.name
 
@@ -474,7 +475,7 @@ class WhamManager(models.Manager):
             elif self._wham_meta.url_pk_type == 'querystring':
                 params[self._wham_meta.url_pk_param] = unicode(pk)
                 url_tail = self._wham_meta.endpoint
-            response_data, full_url, depth = self.make_get_request(url_tail, params=params)
+            response_data, full_url, depth = self.make_get_request(url_tail, params=params, oauth_token=oauth_token)
 
             item_path_template = self._wham_meta.detail_base_result_path
             item_path = []
@@ -513,7 +514,7 @@ class WhamManager(models.Manager):
                 url_param = lookupable_fields_dict[field_name]
                 params = {url_param: kwargs[kwarg_field_names[field_name]]}
                 response_data, full_url, depth = \
-                    self.make_get_request(self._wham_meta.endpoint, params=params)
+                    self.make_get_request(self._wham_meta.endpoint, params=params, oauth_token=oauth_token)
 
                 return self.get_from_dict(response_data)
             else:
@@ -529,6 +530,7 @@ class WhamManager(models.Manager):
         wham = kwargs.pop('wham', False)
         if not wham:
             # do a regular django get()
+            kwargs.pop('oauth_token', None)
             return super(WhamManager, self).get(*args, **kwargs)
         else:
             self.init_wham_meta(**kwargs)
@@ -560,8 +562,10 @@ class WhamManager(models.Manager):
         raw_api = kwargs.pop('raw_api', False)
         if not wham:
             #do a regular filter()
+            oauth_token = kwargs.pop('oauth_token', None)
             return super(WhamManager, self).filter(*args, **kwargs)
 
+        oauth_token = kwargs.get('oauth_token', None)
         self.init_wham_meta(**kwargs)
 
         search_meta = self._wham_search_meta
@@ -577,7 +581,7 @@ class WhamManager(models.Manager):
                 params[search_param] = value
 
                 response_data, full_url, depth = self.make_get_request(
-                        url_tail, params=params)
+                        url_tail, params=params, oauth_token=oauth_token)
                 items = dpath(response_data, search_meta.results_path)
 
                 if raw_api:
@@ -602,6 +606,7 @@ class WhamManager(models.Manager):
             kwargs.pop('oauth_token', None)
             return super(WhamManager, self).all(*args, **kwargs)
 
+        oauth_token = kwargs.get('oauth_token', None)
         # helper functions for the all() method
         ####################################
 
@@ -670,12 +675,12 @@ class WhamManager(models.Manager):
             #now that we know the last_id, we can finally store the cache data
             return last_id
 
-        def get_next_page_url(page_response_data, last_id):
+        def get_next_page_url(page_response_data, last_id, oauth_token=None):
             if self._wham_meta.pager_type is not None:
                 if self._wham_meta.pager_type == FROM_LAST_ID:
                     if last_id is not None:
                         params[self._wham_meta.pager_param] = last_id
-                    next_page_url, final_params = self.get_request_url(endpoint, params)
+                    next_page_url, final_params = self.get_request_url(endpoint, params, oauth_token=oauth_token)
                 elif self._wham_meta.pager_type == NEXT_PAGE_URL:
                     final_params = None
                     try:
@@ -723,7 +728,7 @@ class WhamManager(models.Manager):
                     templated_params[key] = Template(value).render(Context({'pk': self.instance.pk}))
 
                 page_response_data, full_url, __ = self.make_get_request(
-                    fk_field.wham_endpoint, templated_params, depth=depth)
+                    fk_field.wham_endpoint, templated_params, depth=depth, oauth_token=oauth_token)
                 process_fk_page_response_data(page_response_data, fk_field)
                 pass
 
@@ -753,7 +758,7 @@ class WhamManager(models.Manager):
                 last_id = process_page_response_data(page_response_data)
 
                 while pages_left >= 1:
-                    url_path, params = get_next_page_url(page_response_data, last_id)
+                    url_path, params = get_next_page_url(page_response_data, last_id, oauth_token=oauth_token)
                     if url_path is None:
                         break
                     page_response_data, full_url, __ = self.make_get_request_with_full_url_path(url_path, params)
