@@ -59,7 +59,6 @@ wham_meta_attributes = {
         'detail_base_result_path': (),
         'pager_type': None,
         'pager_param': None,
-        'oauth_token': None,
         'max_requests_per_day': None,
         'max_requests_per_minute': None,
         'not_found_error_path': None,
@@ -306,10 +305,6 @@ class WhamManager(models.Manager):
                                                  wham_meta_search_attributes['required'],
                                                  wham_meta_search_attributes['defaults'])
 
-        oauth_token = kwargs.pop('oauth_token', None)
-        if oauth_token is not None:
-            self.set_oauth_token(oauth_token)
-
     @property
     def is_many_related_manager(self):
         ducktype_attributes = ('_add_items', '_clear_items', '_remove_items')
@@ -321,17 +316,17 @@ class WhamManager(models.Manager):
     def get_api_key(self):
         return getattr(settings, self._wham_meta.api_key_settings_name)
 
-    def add_auth_params(self, params):
+    def add_auth_params(self, params, oauth_token=None):
         if self._wham_meta.auth_for_public_get == 'API_KEY':
             params[self._wham_meta.api_key_param] = self.get_api_key()
         if self._wham_meta.requires_oauth_token:
-            params[self._wham_meta.token_param] = self.get_oauth_token()
+            params[self._wham_meta.token_param] = oauth_token
 
-    def get_request_url(self, url_tail, params=None):
+    def get_request_url(self, url_tail, params=None, oauth_token=None):
         url = self._wham_meta.base_url + url_tail + self._wham_meta.url_postfix
         final_params = self._wham_meta.params
         final_params.update(params if params else {})
-        self.add_auth_params(final_params)
+        self.add_auth_params(final_params, oauth_token=oauth_token)
         return url, final_params
 
     def make_get_request_with_full_url_path(self, url_path, params=None, depth=1):
@@ -364,10 +359,10 @@ class WhamManager(models.Manager):
         self.request_made()
         return response_data, full_url, depth
 
-    def make_get_request(self, url_tail, params=None, depth=1):
+    def make_get_request(self, url_tail, params=None, oauth_token=None, depth=1):
         if url_tail is None:
             url_tail = ''
-        url, final_params = self.get_request_url(url_tail, params)
+        url, final_params = self.get_request_url(url_tail, params, oauth_token=oauth_token)
         return self.make_get_request_with_full_url_path(url, final_params)
 
     def check_request_limit(self):
@@ -699,6 +694,7 @@ class WhamManager(models.Manager):
         ####################################
 
         self.init_wham_meta(**kwargs)
+        oauth_token = kwargs.pop('oauth_token', None)
 
         use_cache = kwargs.pop('wham_use_cache', False)
         depth = kwargs.pop('wham_depth', 1)
@@ -753,7 +749,7 @@ class WhamManager(models.Manager):
                     params[m2m_field.wham_pk_param] = self.instance.pk
 
                 page_response_data, full_url, __ = self.make_get_request(
-                    endpoint, params, depth=depth)
+                    endpoint, params, depth=depth, oauth_token=oauth_token)
                 last_id = process_page_response_data(page_response_data)
 
                 while pages_left >= 1:
@@ -791,12 +787,6 @@ class WhamManager(models.Manager):
 
     def _repr_html_(self):
         return render_to_string('wham/docs/endpoint.html', {'endpoint': self})
-
-    def set_oauth_token(self, token):
-        self._wham_meta.oauth_token = token
-
-    def get_oauth_token(self):
-        return self._wham_meta.oauth_token
 
 
 class WhamModel(models.Model):
