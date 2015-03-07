@@ -307,11 +307,17 @@ class WhamManager(models.Manager):
 
     @property
     def is_many_related_manager(self):
-        ducktype_attributes = ('_add_items', '_clear_items', '_remove_items')
-        for attr in ducktype_attributes:
-            if not hasattr(self, attr):
-                return False
-        return True
+
+        def _1pt6_is_many_related_manager():
+            ducktype_attributes = ('_add_items', '_clear_items', '_remove_items')
+            for attr in ducktype_attributes:
+                if not hasattr(self, attr):
+                    return False
+            return True
+
+        return (type(self).__name__ == 'ManyRelatedManager'
+                 or
+                 _1pt6_is_many_related_manager())
 
     def get_api_key(self):
         return getattr(settings, self._wham_meta.api_key_settings_name)
@@ -642,7 +648,7 @@ class WhamManager(models.Manager):
                 self._process_fk_page_response_data(page_response_data, fk_field, depth)
                 pass
 
-            elif self.is_many_related_manager:
+            elif type(self).__name__ == 'ManyRelatedManager':
 
                 # we must handle the case where this is a ForeignKey... not a M2M... didn't we already
                 # do that somewhere?? somewhere new? or did we always hack it for twitter? Spotify maybe?

@@ -36,7 +36,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'south',
     'wham',
     'wham.apis.freebase',
     'wham.apis.spotify',
