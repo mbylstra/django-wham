@@ -607,96 +607,6 @@ class WhamManager(models.Manager):
             return super(WhamManager, self).all(*args, **kwargs)
 
         oauth_token = kwargs.get('oauth_token', None)
-        # helper functions for the all() method
-        ####################################
-
-        def process_fk_page_response_data(response_data, fk_field):
-            pk_field_name = self.model._meta.pk.name
-            items = dpath(response_data, fk_field.wham_results_path)
-
-            last_id = None
-            for item in items:
-                item_id = item[pk_field_name]  #we can't just assume the key is 'id'! but we will anyway #FIXME
-                last_id = item_id
-
-                if depth == 1:
-                    print 'getting from dict'
-                    item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
-                elif depth == 2:
-                    print 'getting full object detail'
-                    item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
-
-                else:
-                    pass
-                    #TODO we should really update the 'through' table fields if it exists
-
-            #now that we know the last_id, we can finally store the cache data
-            return last_id
-
-        def process_page_response_data(response_data):
-            pk_field_name = self.model._meta.pk.name
-            items = dpath(response_data, m2m_field.wham_results_path)
-
-            last_id = None
-            for item in items:
-                item_id = item['id']  #we can't just assume the key is 'id'! but we will anyway #FIXME
-                last_id = item_id
-
-                if depth == 1:
-                    item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
-                elif depth == 2:
-                    item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
-
-                if not self.filter(pk=item_instance.pk).exists():
-                    if hasattr(self, 'add'):
-                        self.add(item_instance)
-                    else:
-                        # a custom "through" model must have been specified
-                        through_instance_create_kwargs = {}
-                        for field in self.through._meta.fields:
-                            if field.primary_key is True:
-                                continue #no need to include the fk as we *assume* it's an autoincrementing id (naughty naughty) #FIXME
-                            if isinstance(field, ForeignKey):
-                                if issubclass(field.rel.to, m2m_field.related.model):
-                                    through_instance_create_kwargs[field.name] = self.instance
-                                    continue
-                                if issubclass(field.rel.to, m2m_field.related.parent_model):
-                                    through_instance_create_kwargs[field.name] = item_instance
-                                    continue
-                            # if it's not the primary key field, parent field or child field
-                            through_instance_create_kwargs[field.name] = item[field.name]
-                        self.through.objects.create(**through_instance_create_kwargs)
-
-
-                else:
-                    pass
-                    #TODO we should really update the 'through' table fields if it exists
-
-            #now that we know the last_id, we can finally store the cache data
-            return last_id
-
-        def get_next_page_url(page_response_data, last_id, oauth_token=None):
-            if self._wham_meta.pager_type is not None:
-                if self._wham_meta.pager_type == FROM_LAST_ID:
-                    if last_id is not None:
-                        params[self._wham_meta.pager_param] = last_id
-                    next_page_url, final_params = self.get_request_url(endpoint, params, oauth_token=oauth_token)
-                elif self._wham_meta.pager_type == NEXT_PAGE_URL:
-                    final_params = None
-                    try:
-                        next_page_url = dpath(page_response_data, self._wham_meta.next_page_path)
-                    except KeyError:
-                        next_page_url = None
-                else:
-                    raise Exception('paging is not implemented yet')
-
-                return next_page_url, final_params
-            else:
-                raise Exception('paging is not supported by this endpoint')
-
-
-        # the main code for the all() method
-        ####################################
 
         self.init_wham_meta(**kwargs)
         oauth_token = kwargs.pop('oauth_token', None)
@@ -718,7 +628,7 @@ class WhamManager(models.Manager):
                 foreign_instance = self.instance
                 fk_field = None
                 for field in self.get_fields():
-                    if (isinstance(field, ForeignKey) \
+                    if (        isinstance(field, ForeignKey)
                             and type(self.model) == type(field.rel.to)
                         ):
                         fk_field = field
@@ -729,15 +639,8 @@ class WhamManager(models.Manager):
 
                 page_response_data, full_url, __ = self.make_get_request(
                     fk_field.wham_endpoint, templated_params, depth=depth, oauth_token=oauth_token)
-                process_fk_page_response_data(page_response_data, fk_field)
+                self._process_fk_page_response_data(page_response_data, fk_field, depth)
                 pass
-
-                # fk_field.wham_endpoint
-                # fk_field.wham_params
-                # fk_field.wham_pk_param
-                # fk_field.wham_result_path
-
-
 
             elif self.is_many_related_manager:
 
@@ -755,15 +658,16 @@ class WhamManager(models.Manager):
 
                 page_response_data, full_url, __ = self.make_get_request(
                     endpoint, params, depth=depth, oauth_token=oauth_token)
-                last_id = process_page_response_data(page_response_data)
+                last_id = self._process_page_response_data(page_response_data, depth, m2m_field)
+                pages_left -= 1
 
                 while pages_left >= 1:
-                    url_path, params = get_next_page_url(page_response_data, last_id, oauth_token=oauth_token)
+                    url_path, params = self._get_next_page_url(page_response_data, last_id, endpoint, params, oauth_token=oauth_token)
                     if url_path is None:
                         break
                     page_response_data, full_url, __ = self.make_get_request_with_full_url_path(url_path, params)
                     second_last_id = last_id
-                    last_id = process_page_response_data(page_response_data)
+                    last_id = self._process_page_response_data(page_response_data, depth, m2m_field)
                     if second_last_id == last_id:
                         break
                     curr_page += 1
@@ -779,6 +683,91 @@ class WhamManager(models.Manager):
         kwargs.pop('wham', False)
         return super(WhamManager, self).all(*args, **kwargs)
 
+    def _process_fk_page_response_data(self, response_data, fk_field, depth):
+        pk_field_name = self.model._meta.pk.name
+        items = dpath(response_data, fk_field.wham_results_path)
+
+        last_id = None
+        for item in items:
+            item_id = item[pk_field_name]  #we can't just assume the key is 'id'! but we will anyway #FIXME
+            last_id = item_id
+
+            if depth == 1:
+                print 'getting from dict'
+                item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
+            elif depth == 2:
+                print 'getting full object detail'
+                item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
+
+            else:
+                pass
+                #TODO we should really update the 'through' table fields if it exists
+
+        #now that we know the last_id, we can finally store the cache data
+        return last_id
+
+    def _process_page_response_data(self, response_data, depth, m2m_field):
+        pk_field_name = self.model._meta.pk.name
+        items = dpath(response_data, m2m_field.wham_results_path)
+
+        last_id = None
+        for item in items:
+            item_id = item.get('id', None)  #we can't just assume the key is 'id'! but we will anyway #FIXME
+
+            has_id = item_id is not None
+
+            if (depth == 1) or (not has_id):
+                item_instance = self.get_from_dict(item, pk_dict_key=pk_field_name)
+            elif depth == 2:
+                item_instance = self.wham_get(pk=item_id) #get the full object detail (requires a web request)
+
+            if not self.filter(pk=item_instance.pk).exists():
+                if hasattr(self, 'add'):
+                    self.add(item_instance)
+                else:
+                    # a custom "through" model must have been specified
+                    through_instance_create_kwargs = {}
+                    for field in self.through._meta.fields:
+                        if field.primary_key is True:
+                            continue #no need to include the fk as we *assume* it's an autoincrementing id (naughty naughty) #FIXME
+                        if isinstance(field, ForeignKey):
+                            if issubclass(field.rel.to, m2m_field.related.model):
+                                through_instance_create_kwargs[field.name] = self.instance
+                                continue
+                            if issubclass(field.rel.to, m2m_field.related.parent_model):
+                                through_instance_create_kwargs[field.name] = item_instance
+                                continue
+                        # if it's not the primary key field, parent field or child field
+                        through_instance_create_kwargs[field.name] = item[field.name]
+                    self.through.objects.create(**through_instance_create_kwargs)
+
+
+            else:
+                pass
+                #TODO we should really update the 'through' table fields if it exists
+
+        #now that we know the last_id, we can finally store the cache data
+        last_id = item_id
+        return last_id
+
+    def _get_next_page_url(self, page_response_data, last_id, endpoint, params, oauth_token=None):
+        if self._wham_meta.pager_type is not None:
+            if self._wham_meta.pager_type == FROM_LAST_ID:
+                if last_id is not None:
+                    params[self._wham_meta.pager_param] = last_id
+                next_page_url, final_params = self.get_request_url(endpoint, params, oauth_token=oauth_token)
+            elif self._wham_meta.pager_type == NEXT_PAGE_URL:
+                final_params = None
+                try:
+                    next_page_url = dpath(page_response_data, self._wham_meta.next_page_path)
+                except KeyError:
+                    next_page_url = None
+            else:
+                raise Exception('paging is not implemented yet')
+
+            return next_page_url, final_params
+        else:
+            raise Exception('paging is not supported by this endpoint')
 
     @property
     def docs(self):

@@ -43,7 +43,7 @@ INSTALLED_APPS = (
     'wham.apis.deezer',
     # 'wham.apis.soundcloud',
     'wham.apis.twitter',
-    # 'wham.apis.lastfm',
+    'wham.apis.lastfm',
     # 'wham.apis.instagram',
     # 'wham.apis.musicbrainz',
     'wham.apis.facebook',

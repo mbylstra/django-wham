@@ -16,28 +16,29 @@ class TestCase(TestCase):
     def test_spotify(self):
 
         with HTTMock(*mock_functions):
-            track = SpotifyTrack.objects.get(pk='0eGsygTp906u18L0Oimnem')
+            track = SpotifyTrack.objects.wham_get(pk='0eGsygTp906u18L0Oimnem')
             self.assertEquals(track.name, 'Mr. Brightside')
-            tracks = SpotifyTrack.objects.all(wham_use_cache=True)
+            tracks = SpotifyTrack.objects.wham_all(wham_use_cache=True)
             self.assertEqual(tracks.count(), 1)
-            artists = SpotifyArtist.objects.all(wham_use_cache=True)
+            artists = SpotifyArtist.objects.wham_all(wham_use_cache=True)
             self.assertEqual(artists.count(), 1)
             artist = artists[0]
 
             self.assertEqual(artist.name, 'The Killers')
 
-            albums = artist.albums.all()
+            albums = artist.albums.wham_all()
             self.assertEqual(albums.count(), 20)
 
-            albums = artist.albums.all() #this time it should get results from the database/cache (and not break)
+            albums = artist.albums.wham_all() #this time it should get results from the database/cache (and not break)
             self.assertEqual(albums.count(), 20)
+            self.assertIsNone(albums[0].popularity) #popularity should not have been gotten, as it's only on the detail page
 
-            albums = artist.albums.all(wham_depth=2) #this time it should make a full request for each album
+            albums = artist.albums.wham_all(wham_depth=2) #this time it should make a full request for each album
             self.assertIsNotNone(albums[0].popularity) #popularity should have been gotten because of depth=2
 
-            artists = SpotifyArtist.objects.filter(name__icontains='Django')
+            artists = SpotifyArtist.objects.wham_filter(name__icontains='Django')
             self.assertEqual(artists[0].name, 'Django Reinhardt')
-            artists = SpotifyArtist.objects.filter(name__icontains='Django') #this time get from cache
+            artists = SpotifyArtist.objects.wham_filter(name__icontains='Django') #this time get from cache
 
 
 

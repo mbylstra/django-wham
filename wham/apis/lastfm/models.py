@@ -1,15 +1,17 @@
 from django.db import models
-from wham.fields import WhamCharField, WhamManyToManyField, WhamTextField
+from wham.fields import WhamCharField, WhamManyToManyField, WhamTextField, \
+    WhamURLField
 from wham.models import WhamModel
+from wham.utils import merge_dicts
 
 
 class LastFmMeta:
     base_url = 'http://ws.audioscrobbler.com/2.0/'
     auth_for_public_get = 'API_KEY'
     api_key_settings_name = 'LASTFM_API_KEY'
-    api_params = {
+    params = {
         'format': 'json',
-        'limit': 500,
+        #'limit': 500, #disabled as it breaks the mock test
     }
 
 # class LastFmTrack(WhamModel):
@@ -52,7 +54,7 @@ class LastFmUser(WhamModel):
     class WhamMeta(LastFmMeta):
         endpoint = ''
         detail_base_result_path = ('user',)
-        params = {'method': 'user.getInfo'}
+        params = merge_dicts(LastFmMeta.params, {'method': 'user.getInfo'})
         url_pk_type = 'querystring'
         url_pk_param = 'user'
 
@@ -60,11 +62,10 @@ class LastFmUser(WhamModel):
         return self.name
 
 
-
-
 class LastFmArtist(WhamModel):
 
     name = WhamTextField(primary_key=True)
+    mega_image_url = WhamURLField(wham_result_path=('image', 4, '#text'))
 
     mbid = WhamCharField(max_length=255, null=True, wham_can_lookup=True) #this *would* be unique & not nullable, but lasfm doesn't always know it
 
@@ -73,7 +74,7 @@ class LastFmArtist(WhamModel):
 
     class WhamMeta(LastFmMeta):
         endpoint = ''
-        params = {'method': 'artist.getInfo'}
+        params = merge_dicts(LastFmMeta.params, {'method': 'artist.getInfo'})
         detail_base_result_path = ('artist',)
         url_pk_type = 'querystring'
         url_pk_param = 'artist'
