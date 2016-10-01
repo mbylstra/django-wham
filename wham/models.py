@@ -78,6 +78,15 @@ wham_meta_search_attributes = {
     }
 }
 
+wham_meta_filter_attributes = {
+    'required': (),
+    'defaults': {
+        'endpoint': '',
+        'results_path': (),
+        'filters': [],
+    }
+}
+
 def check_n_set_class_attributes(klass, required, defaults, exclude=()):
 
     #check required attributes are set
@@ -299,12 +308,17 @@ class WhamManager(models.Manager):
                 check_n_set_class_attributes(self._wham_meta,
                                              wham_meta_attributes['required'],
                                              wham_meta_attributes['defaults'],
-                                             exclude=['Search'])
+                                             exclude=['Search', 'Filter'])
                 self._wham_search_meta = getattr(self._wham_meta, 'Search', None)
+                self._wham_filter_meta = getattr(self._wham_meta, 'Filter', None)
                 if self._wham_search_meta:
                     check_n_set_class_attributes(self._wham_search_meta,
                                                  wham_meta_search_attributes['required'],
                                                  wham_meta_search_attributes['defaults'])
+                if self._wham_filter_meta:
+                    check_n_set_class_attributes(self._wham_filter_meta,
+                                                 wham_meta_filter_attributes['required'],
+                                                 wham_meta_filter_attributes['defaults'])
 
     @property
     def is_many_related_manager(self):
@@ -598,6 +612,31 @@ class WhamManager(models.Manager):
                 for item in items:
                     self.get_from_dict(item, pk_dict_key=pk_field_name)
 
+        filter_meta = self._wham_filter_meta
+        if filter_meta:
+            # dodgily assume there is just one filter at a time:
+            filter = filter_meta.filters[0]
+            field = filter['field']
+            if field in kwargs:
+                value = kwargs[field]
+
+                url_tail = filter_meta.endpoint
+                querystring_param = filter['querystring_param']
+                # querystring_value_prefix = filter_ 'language:',
+                params = {}
+                params[querystring_param] = filter['querystring_value_prefix'] + value
+
+                response_data, full_url, depth = self.make_get_request(
+                    url_tail, params=params, oauth_token=oauth_token)
+                items = dpath(response_data, filter_meta.results_path)
+
+                if raw_api:
+                    return response_data
+
+                pk_field_name = self.model._meta.pk.name
+                for item in items:
+                    self.get_from_dict(item, pk_dict_key=pk_field_name)
+
         # do a regular filter()
         return super(WhamManager, self).filter(*args, **kwargs)
 
@@ -683,6 +722,7 @@ class WhamManager(models.Manager):
                 # we don't bother handling this case yet. It's pretty rare that
                 # a public API will provide a list of all objects for a endpoint (there's
                 # usually thousands of them)
+                # Actually, the github api allows this!
                 pass
 
         #finish by doing a regular django all()

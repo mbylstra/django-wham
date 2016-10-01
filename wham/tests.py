@@ -30,28 +30,33 @@ def build_httmock_function(scheme, netloc, url_path, response_content, method='G
 def build_httmock_functions(mock_response_dir):
     print 'building mock functions'
     functions = []
-    for filename in listdir(mock_response_dir):
-        filepath = join(mock_response_dir,filename)
-        if isfile(filepath):
-            method = None
-            for _method in ('GET', 'POST', 'PUT', 'DELETE', 'PATCH'):
-                if filename.startswith(_method):
-                    filename = filename[len(_method):]
-                    method = _method
+    try:
+        listdir(mock_response_dir)
+    except OSError:
+        return []
+    else:
+        for filename in listdir(mock_response_dir):
+            filepath = join(mock_response_dir,filename)
+            if isfile(filepath):
+                method = None
+                for _method in ('GET', 'POST', 'PUT', 'DELETE', 'PATCH'):
+                    if filename.startswith(_method):
+                        filename = filename[len(_method):]
+                        method = _method
 
-            url = urllib2.unquote(filename)
+                url = urllib2.unquote(filename)
 
-            parts = urlparse(url)
-            params = {}
-            if parts.query:
-                print parts.query
-                params = dict(parse_qsl(parts.query))
-                print params
-            with open(filepath) as f:
-                content = f.read()
-                functions.append(build_httmock_function(
-                    parts.scheme, parts.netloc, parts.path, content, params=params, method=method))
-    return functions
+                parts = urlparse(url)
+                params = {}
+                if parts.query:
+                    print parts.query
+                    params = dict(parse_qsl(parts.query))
+                    print params
+                with open(filepath) as f:
+                    content = f.read()
+                    functions.append(build_httmock_function(
+                        parts.scheme, parts.netloc, parts.path, content, params=params, method=method))
+        return functions
 
 
 def make_mock_response_file(url, content, output_dir, method='GET', extra_params=None):

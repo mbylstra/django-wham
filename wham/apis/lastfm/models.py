@@ -91,3 +91,6 @@ class LastFmUserTopArtists(models.Model):
 
     class Meta:
         ordering = ('-playcount',)
+
+
+
