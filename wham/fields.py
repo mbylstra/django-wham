@@ -94,7 +94,7 @@ class WhamImageField(WhamFieldMixin, models.ImageField):
     def type_repr(self):
         return 'image'
 
-class WhamManyToManyField(models.ManyToManyField):
+class WhamManyToManyField(WhamFieldMixin, models.ManyToManyField):
 
     def __init__(self, *args, **kwargs):
         self.wham_result_path = kwargs.pop('wham_result_path', None)

@@ -1,6 +1,6 @@
 from django.db import models
 from wham.fields import WhamCharField, WhamManyToManyField, WhamTextField, \
-    WhamURLField
+    WhamURLField, WhamForeignKey
 from wham.models import WhamModel
 from wham.utils import merge_dicts
 
@@ -85,9 +85,9 @@ class LastFmArtist(WhamModel):
 
 
 class LastFmUserTopArtists(models.Model):
-    user = models.ForeignKey(LastFmUser, related_name='')
-    artist = models.ForeignKey(LastFmArtist)
-    playcount = models.CharField(max_length=255)
+    user = WhamForeignKey(LastFmUser, related_name='')
+    artist = WhamForeignKey(LastFmArtist)
+    playcount = WhamCharField(max_length=255)
 
     class Meta:
         ordering = ('-playcount',)

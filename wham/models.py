@@ -4,6 +4,7 @@ from urllib import urlencode, quote_plus
 
 from django.conf import settings
 from django.db.models import ForeignKey
+from django.db.models.fields.reverse_related import ManyToManyRel, ManyToOneRel
 from django.template import Template, Context
 from django.template.loader import render_to_string
 import requests
@@ -372,13 +373,17 @@ class WhamManager(models.Manager):
         RateLimitingData.objects.request_made(self.model)
 
     def get_fields(self):
-        return [field for (field, _) in self.model._meta.get_fields_with_model()]
+        return self.model._meta.get_fields()
+
+    def get_m2m_fields(self):
+        all_fields = self.get_fields()
+        return [field.field for field in all_fields if field.many_to_many is True]
 
     def get_field_names(self):
         return [field.name for field in self.get_fields()]
 
     def get_field(self, field_name):
-        return self.model._meta.get_field_by_name(field_name)[0]
+        return self.model._meta.get_field(field_name)
 
     def dict_to_model_instance(self, dict):
         pass
@@ -392,6 +397,8 @@ class WhamManager(models.Manager):
 
         for field_name in field_names:
             field = self.get_field(field_name)
+            if isinstance(field, ManyToManyRel) or isinstance(field, ManyToOneRel):
+                field = field.field
             result_path = field.get_result_path()
             try:
                 value = dpath(data, result_path)
@@ -435,7 +442,7 @@ class WhamManager(models.Manager):
             instance = self.model.objects.create(**kwargs)
 
         #now we do m2m fields
-        for field, _ in self.model._meta.get_m2m_with_model():
+        for field in self.get_m2m_fields():
             related_class = field.rel.to
             wham_result_path = field.wham_result_path
             if not field.wham_result_path:
