@@ -6,7 +6,7 @@ from wham.fields import (
     WhamURLField,
     WhamForeignKey,
     WhamIntegerField,
-)
+    WhamDateTimeField, WhamBooleanField)
 from wham.models import WhamModel
 from wham.utils import merge_dicts
 
@@ -44,10 +44,22 @@ class GithubMeta:
 class Repository(WhamModel):
     id = WhamCharField(max_length=255, primary_key=True)
     name = WhamCharField(max_length=255)
-    description = WhamTextField()
+    full_name = WhamTextField()
+    html_url = WhamURLField()
+    description = WhamTextField(null=True)
     url = WhamURLField()
     stargazers_count = WhamIntegerField()
+    watchers_count = WhamIntegerField()
+    forks_count = WhamIntegerField()
+    open_issues_count = WhamIntegerField()
+    has_issues = WhamBooleanField()
     language = WhamCharField(max_length=255, null=True)
+
+    created_at = WhamDateTimeField(wham_format='iso8601')
+    updated_at = WhamDateTimeField(wham_format='iso8601')
+    pushed_at = WhamDateTimeField(wham_format='iso8601')
+
+    size = WhamIntegerField()
 
 
     # "created_at": "2011-01-26T19:01:12Z",

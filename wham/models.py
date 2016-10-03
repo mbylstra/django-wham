@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 import requests
 import time
 from datetime import datetime, date
-from django.utils import timezone
+from django.utils import timezone, dateparse
 
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -357,10 +357,22 @@ class WhamManager(models.Manager):
 
         # print 'url_path', url_path
         # print 'params', params
-        response = session.get(url_path, params=params)
 
 
-        response.raise_for_status()
+        success = False
+        while not success:
+            try:
+                response = session.get(url_path, params=params)
+            except Exception:
+                time.sleep(10)
+            else:
+                try:
+                    response.raise_for_status()
+                except Exception:
+                    time.sleep(10)
+                else:
+                    success = True
+
         print 'response', response.content
         response_data = response.json()
 
@@ -440,9 +452,12 @@ class WhamManager(models.Manager):
 
                 else:
                     if isinstance(field, WhamDateTimeField):
-                        value = datetime.fromtimestamp(
-                            time.mktime(time.strptime(value, '%a %b %d %H:%M:%S +0000 %Y')))
-                        value = timezone.make_aware(value, timezone.get_default_timezone())
+                        if field.wham_format.lower() == 'iso8601':
+                            value = dateparse.parse_datetime(value)
+                        else:
+                            value = datetime.fromtimestamp(
+                                time.mktime(time.strptime(value, '%a %b %d %H:%M:%S +0000 %Y')))
+                            value = timezone.make_aware(value, timezone.get_default_timezone())
 
                     kwargs[field_name] = value
 
@@ -640,7 +655,6 @@ class WhamManager(models.Manager):
         # do a regular filter()
         return super(WhamManager, self).filter(*args, **kwargs)
 
-
     def wham_all(self, *args, **kwargs):
         kwargs['wham'] = True
         return self.all(*args, **kwargs)
@@ -729,6 +743,29 @@ class WhamManager(models.Manager):
         kwargs.pop('oauth_token', None)
         kwargs.pop('wham', False)
         return super(WhamManager, self).all(*args, **kwargs)
+
+    def wham_custom_fetch_resources(self, *args, **kwargs):
+
+        oauth_token = kwargs.get('oauth_token', None)
+        raw_api = kwargs.pop('raw_api', False)
+        self.init_wham_meta(**kwargs)
+
+        filter_meta = self._wham_filter_meta
+        if filter_meta:
+            url_tail = filter_meta.endpoint
+            params = kwargs
+
+            response_data, full_url, depth = self.make_get_request(
+                url_tail, params=params, oauth_token=oauth_token)
+            items = dpath(response_data, filter_meta.results_path)
+
+            if raw_api:
+                return response_data
+
+            pk_field_name = self.model._meta.pk.name
+            for item in items:
+                self.get_from_dict(item, pk_dict_key=pk_field_name)
+        return response_data
 
     def _process_fk_page_response_data(self, response_data, fk_field, depth):
         pk_field_name = self.model._meta.pk.name
